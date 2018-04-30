@@ -130,19 +130,25 @@ for (let i = 0; i < finalKeywords.length; i++) {
 csvtojson()
 .fromFile(AirtableCSV)
 .on('json', (jsonObj, rowIndex) => {
-  // console.log(rowIndex + ' ' + extractNameQuotes(jsonObj['Name']));
+  
+  //Pushes AirtableCSV's names into airtableNames after removing any quotation marks
   airtableNames.push(extractNameQuotes(jsonObj['Name']))
-  // console.log(rowIndex + ' ' + airtableNames)
 })
+
+//This runs after the Airtable jsonObj has been loaded and the names have been cleaned up
 .on('done', () => {
   
+  //Loops through airtableNames
   for (let i = 0; i < airtableNames.length; i++) {
-    // console.log('Searching for:' + airtableNames[i])
+    
+    //Loops through lüttekenNames
     for (let j = 0; j < lüttekenNames.length; j++) {
+      
+      /* If the loop's current value of lüttekenNames includes the loop's current value of
+      airtableNames, push those results into combinedNames */
       if (lüttekenNames[j].includes(airtableNames[i])) {
         combinedNames.push(lüttekenNames)
       }
-      
     }
   }
   console.log(combinedNames)
