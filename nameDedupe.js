@@ -29,8 +29,8 @@ let knownKeywords = ["Englische Oper (Gattung)",
                     "Tragédie lyrique",
                     "Vergleich Oper/Drama"]
 
-//Removes '<' and '>' form input and returns array of cleaned data. If input doesn't have '<, >', pushes into array
-//without modifying.
+/* Removes '<' and '>' from input and returns array of cleaned data. If input doesn't
+have '<, >', pushes into array without modifying */
 function extractName(manynames) {
   let cleanNames = [];
   if (manynames.charAt(0) === '<') {
@@ -57,24 +57,13 @@ function extractNameQuotes(manynames) {
   return cleanNames
 }
 
-function extractKeyword(dirtyKeyword) {
-  let cleanKeyword = [];
-  if (dirtyKeyword.charAt(0) === '<') {
-    let pattern = /<(.*?)>/g;
-    while(matches = pattern.exec(dirtyKeyword)) {
-      cleanKeyword.push(matches[1]);
-    }
-  } else if (dirtyKeyword.charAt(0) === ''){
-  } else {
-    cleanKeyword.push(dirtyKeyword)
-  }
-  return cleanKeyword
-}
-
+/* Declares 3 arrays which need to be globally accessible. These arrays will be compared
+to each other inside csvtojson()'s .done event */
 let lüttekenNames = [];
 let airtableNames = [];
 let combinedNames = [];
 
+//Loads csv file from Lütteken filepath. Creates jsonObj and rowIndex
 csvtojson()
 .fromFile(LüttekenCSV)
 .on('json', (jsonObj, rowIndex) => {
@@ -98,19 +87,21 @@ for (let i = 0; i < concatArray.length; i++) {
   //Combines desired aspects of names together into array
   formattedName.push(firstName + ' ' + middleName + ' ' + nickName + ' ' + lastName);
 }
-  
+
+/* This will be used to push the results of formattedName into after the
+excess spaces have been removed */
 let finalName =[];
 
 //Removes multiple spaces from names. Pushes results into finalName
 formattedName.forEach(spaceRemover = (name) => {
-  let pattern = / +/g;
   finalName.push(name.replace(/ +/gi, ' '))
-  // console.log(finalName)
 })
 
-let seperatedKeyword =  extractKeyword(jsonObj['Keyword'])
-// console.log(seperatedKeyword)
+//This removes '<' and '>' from the keywords, and saves them as seperatedKeyword
+let seperatedKeyword =  extractName(jsonObj['Keyword'])
 
+/* This variable will used to save matching keywords that appear both in our list
+of knownKeywords and in the keywords column of the LüttekenCSV */
 let finalKeywords = [];
 
 //Loops through knownKeywords (22 times)
@@ -135,6 +126,7 @@ for (let i = 0; i < finalKeywords.length; i++) {
 }
 })
 
+//Loads csv file from AirtableCSV filepath. Creates jsonObj and rowIndex
 csvtojson()
 .fromFile(AirtableCSV)
 .on('json', (jsonObj, rowIndex) => {
