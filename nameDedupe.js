@@ -151,5 +151,4 @@ csvtojson()
       }
     }
   }
-  console.log(combinedNames)
 })
