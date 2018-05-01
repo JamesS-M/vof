@@ -79,10 +79,13 @@ csvtojson()
 //Combines different parts of name to create formattedName
 let formattedName = [];
 for (let i = 0; i < concatArray.length; i++) {
+  titleName = parseFullName(concatArray[i], 'title');
   firstName = parseFullName(concatArray[i], 'first');
   middleName = parseFullName(concatArray[i], 'middle');
-  nickName = parseFullName(concatArray[i], 'nick')
+  nickName = parseFullName(concatArray[i], 'nick');
   lastName = parseFullName(concatArray[i], 'last');
+  // suffixName = parseFullName(concatArray[i], 'suffix');
+
 
   //Combines desired aspects of names together into array
   formattedName.push(firstName + ' ' + middleName + ' ' + nickName + ' ' + lastName);
@@ -138,17 +141,31 @@ csvtojson()
 //This runs after the Airtable jsonObj has been loaded and the names have been cleaned up
 .on('done', () => {
   
+
+  let airtableNamesString = [];
+  let lüttekenNamesString = [];
+  airtableNamesString.push(airtableNames.toString())
+  lüttekenNamesString.push(lüttekenNames.toString())
+  let airtableNamesStringSplit = airtableNamesString[0].split(",")
+  let lüttekenNamesStringSplit = lüttekenNamesString[0].split(",")  
+  // console.log(airtableNamesStringSplit)
+  console.log(lüttekenNamesStringSplit)
+
+
   //Loops through airtableNames
-  for (let i = 0; i < airtableNames.length; i++) {
+  for (let i = 0; i < airtableNamesStringSplit.length; i++) {
     
     //Loops through lüttekenNames
-    for (let j = 0; j < lüttekenNames.length; j++) {
+    for (let j = 0; j < lüttekenNamesStringSplit.length; j++) {
       
       /* If the loop's current value of lüttekenNames includes the loop's current value of
       airtableNames, push those results into combinedNames */
-      if (lüttekenNames[j].includes(airtableNames[i])) {
-        combinedNames.push(lüttekenNames)
+      if (airtableNamesStringSplit[i] === (lüttekenNamesStringSplit[j])) {
+        
+        combinedNames.push(airtableNamesStringSplit[i])
       }
     }
   }
+  console.log('These names appeared in both lists: ')
+  console.log(combinedNames)
 })
