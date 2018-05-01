@@ -164,8 +164,9 @@ csvtojson()
       
       /* If the loop's current value of lüttekenNames includes the loop's current value of
       airtableNames, push those results into combinedNames */
-      if (airtableNamesStringSplit[i] === (lüttekenNamesStringSplit[j])) {
-        combinedNames.push(airtableNamesStringSplit[i])   
+      if (airtableNamesStringSplit[i][1] === lüttekenNamesStringSplit[j][1] && airtableNamesStringSplit[i].length === lüttekenNamesStringSplit[j].length && airtableNamesStringSplit[i][airtableNamesStringSplit.length -3] === lüttekenNamesStringSplit[j][lüttekenNamesStringSplit.length -3]) {
+        combinedNames.push(airtableNamesStringSplit[i])
+        
       }
     }
   }
