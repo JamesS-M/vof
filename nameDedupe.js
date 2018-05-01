@@ -80,6 +80,7 @@ let lüttekenNames = [];
 let airtableNames = [];
 let combinedNames = [];
 
+
 //Loads csv file from Lütteken filepath. Creates jsonObj and rowIndex
 csvtojson()
 .fromFile(LüttekenCSV)
@@ -146,17 +147,14 @@ csvtojson()
 
 //This runs after the Airtable jsonObj has been loaded and the names have been cleaned up
 .on('done', () => {
-  
-
+console.log(airtableNames)
+  //Converts airtableNames and lüttekenNames from array of arrays to array of strings
   let airtableNamesString = [];
   let lüttekenNamesString = [];
   airtableNamesString.push(airtableNames.toString())
   lüttekenNamesString.push(lüttekenNames.toString())
   let airtableNamesStringSplit = airtableNamesString[0].split(",")
   let lüttekenNamesStringSplit = lüttekenNamesString[0].split(",")  
-  // console.log(airtableNamesStringSplit)
-  // console.log(lüttekenNamesStringSplit)
-
 
   //Loops through airtableNames
   for (let i = 0; i < airtableNamesStringSplit.length; i++) {
@@ -166,12 +164,11 @@ csvtojson()
       
       /* If the loop's current value of lüttekenNames includes the loop's current value of
       airtableNames, push those results into combinedNames */
-      if (airtableNamesStringSplit[i] == (lüttekenNamesStringSplit[j])) {
-        
-        combinedNames.push(airtableNamesStringSplit[i])
+      if (airtableNamesStringSplit[i] === (lüttekenNamesStringSplit[j])) {
+        combinedNames.push(airtableNamesStringSplit[i])   
       }
     }
   }
   console.log('These names appeared in both lists: ')
-  console.log(combinedNames)
+  console.log(Array.from(new Set(combinedNames.concat())))
 })
