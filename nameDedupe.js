@@ -45,6 +45,23 @@ function extractName(manynames) {
   return cleanNames
 }
 
+//Re-orders Lütteken names to be in Airtable format(firstName lastName)
+function redoName(name) {
+  let str = name.toString();
+  let regex = /\,/
+  if (regex.test(str)) {
+    var res = str.split(", ");
+    if (res[1]) {
+    return res[1].substr(0,res[1].length) + ' ' + res[0];
+    } else {
+      return res[0]
+    }
+  } else {
+    return str
+  }
+}
+
+//Removes quotation marks
 function extractNameQuotes(manynames) {
   let cleanNames = [];
   switch(manynames.charAt(0)) {
@@ -79,16 +96,7 @@ csvtojson()
 //Combines different parts of name to create formattedName
 let formattedName = [];
 for (let i = 0; i < concatArray.length; i++) {
-  titleName = parseFullName(concatArray[i], 'title');
-  firstName = parseFullName(concatArray[i], 'first');
-  middleName = parseFullName(concatArray[i], 'middle');
-  nickName = parseFullName(concatArray[i], 'nick');
-  lastName = parseFullName(concatArray[i], 'last');
-  // suffixName = parseFullName(concatArray[i], 'suffix');
-
-
-  //Combines desired aspects of names together into array
-  formattedName.push(firstName + ' ' + middleName + ' ' + nickName + ' ' + lastName);
+  formattedName.push(redoName(concatArray[i]))
 }
 
 /* This will be used to push the results of formattedName into after the
@@ -123,8 +131,6 @@ for (let i = 0; i < finalKeywords.length; i++) {
   // let lüttekenNames = [];
   if (finalKeywords[i] && finalName[i]) {
   lüttekenNames.push(finalName)
-  // console.log(rowIndex + ' ' + lüttekenNames)
-  // console.log(lüttekenNames)  
   }
 }
 })
@@ -149,7 +155,7 @@ csvtojson()
   let airtableNamesStringSplit = airtableNamesString[0].split(",")
   let lüttekenNamesStringSplit = lüttekenNamesString[0].split(",")  
   // console.log(airtableNamesStringSplit)
-  console.log(lüttekenNamesStringSplit)
+  // console.log(lüttekenNamesStringSplit)
 
 
   //Loops through airtableNames
@@ -160,7 +166,7 @@ csvtojson()
       
       /* If the loop's current value of lüttekenNames includes the loop's current value of
       airtableNames, push those results into combinedNames */
-      if (airtableNamesStringSplit[i] === (lüttekenNamesStringSplit[j])) {
+      if (airtableNamesStringSplit[i] == (lüttekenNamesStringSplit[j])) {
         
         combinedNames.push(airtableNamesStringSplit[i])
       }
