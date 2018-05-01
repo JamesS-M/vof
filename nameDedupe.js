@@ -147,7 +147,7 @@ csvtojson()
 
 //This runs after the Airtable jsonObj has been loaded and the names have been cleaned up
 .on('done', () => {
-console.log(airtableNames)
+
   //Converts airtableNames and lüttekenNames from array of arrays to array of strings
   let airtableNamesString = [];
   let lüttekenNamesString = [];
