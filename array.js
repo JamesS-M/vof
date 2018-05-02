@@ -104,29 +104,31 @@ let lütteken = [
 ]
 
 let combined = [];
+let airtableString = airtable.toString();
 
 function redoName(name) {
-	let str = name.toString();
-	let regex = /\,/
-	if (regex.test(str)) {
-		var res = str.split(", ");
-		if (res[1]) {
-		return res[1].substr(0,res[1].length) + ' ' + res[0];
-		} else {
-			return res[0]
-		}
-	} else {
-		return str
-	}
+  let str = name.toString();
+  let regex = /\,/
+  if (regex.test(str)) {
+    var res = str.split(", ");
+    if (res[1]) {
+    return res[1].substr(0,res[1].length) + ' ' + res[0];
+    } else {
+      return res[0]
+    }
+  } else {
+    return str
+  }
 }
-console.log(lütteken.length)
-for (let i = 0; i < airtable.length; i++) {
+
+for (let i = 0; i < airtableString.length; i++) {
 	let lüttekenModified = redoName(lütteken[i])
     for (let j = 0; j < lüttekenModified.length; j++)
       {
-       if (airtable[i] !==lüttekenModified[j]){
-         combined.push(airtable[i])
+       if (airtable[i].length === lüttekenModified[j].length){
+         combined.push(lüttekenModified[i])
+         console.log(i)
        } 
       }
-      console.log(combined)
+      // console.log(combined)
   }
