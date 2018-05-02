@@ -74,6 +74,23 @@ function extractNameQuotes(manynames) {
   return cleanNames
 }
 
+var flatten = function(a, shallow,r){
+  if(!r){ r = []}
+   
+if (shallow) {
+  return r.concat.apply(r,a);
+  }
+      
+   for(var i=0; i<a.length; i++){
+        if(a[i].constructor == Array){
+            flatten(a[i],shallow,r);
+        }else{
+            r.push(a[i]);
+        }
+    }
+    return r;
+}
+
 /* Declares 3 arrays which need to be globally accessible. These arrays will be compared
 to each other inside csvtojson()'s .done event */
 let lüttekenNames = [];
@@ -148,28 +165,35 @@ csvtojson()
 //This runs after the Airtable jsonObj has been loaded and the names have been cleaned up
 .on('done', () => {
 
-  //Converts airtableNames and lüttekenNames from array of arrays to array of strings
-  let airtableNamesString = [];
-  let lüttekenNamesString = [];
-  airtableNamesString.push(airtableNames.toString())
-  lüttekenNamesString.push(lüttekenNames.toString())
-  let airtableNamesStringSplit = airtableNamesString[0].split(",")
-  let lüttekenNamesStringSplit = lüttekenNamesString[0].split(",")  
+  //Flattens both arrays into array of strings
+  let airtableNamesFlat = flatten(airtableNames)
+  let lüttekenNamesFlat = flatten(lüttekenNames)
+  
+  //Loops through airtable names
+  for (let i = 0; i < airtableNamesFlat.length; i++) {
+    for (let j = 0; j < lüttekenNamesFlat.length; j++) {
 
-  //Loops through airtableNames
-  for (let i = 0; i < airtableNamesStringSplit.length; i++) {
-    
-    //Loops through lüttekenNames
-    for (let j = 0; j < lüttekenNamesStringSplit.length; j++) {
-      
-      /* If the loop's current value of lüttekenNames includes the loop's current value of
-      airtableNames, push those results into combinedNames */
-      if (airtableNamesStringSplit[i][1] === lüttekenNamesStringSplit[j][1] && airtableNamesStringSplit[i][airtableNamesStringSplit.length] === lüttekenNamesStringSplit[j][lüttekenNamesStringSplit.length]) {
-        combinedNames.push(airtableNamesStringSplit[i])
-        
+
+      if (airtableNamesFlat[i].includes(lüttekenNamesFlat[j])) {
+        // console.log(airtableNamesFlat[i])
       }
     }
   }
-  console.log('These names appeared in both lists: ')
-  console.log(Array.from(new Set(combinedNames.concat())))
+
+// flattening an array - turns an array into string
+// substring match airtable is a substring of lütteken
+// use lists to create mapping function
+// empty function that
+//   return canonical name
+//   provide name and return canonical
+//   array of arrays
+//   loop through the name that matches
+
+//   excel
+//   column A - Canonical
+//   column B - Airtable
+//   column C - Lütteken
+
+// console.log(airtableNamesFlat)
+console.log(lüttekenNamesFlat)
 })
