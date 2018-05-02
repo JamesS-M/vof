@@ -1,4 +1,4 @@
-const LüttekenCSV='/Users/James/Documents/NEO4J/Folder/Input/Reviews.csv'
+const LüttekenCSV='/Users/James/Documents/NEO4J/Folder/Input/csv/Reviews.csv'
 const AirtableCSV='/Users/James/Downloads/Composers-Gridview.csv'
 
 const csvtojson=require('csvtojson')
@@ -175,17 +175,19 @@ csvtojson()
 
 
       if (airtableNamesFlat[i].includes(lüttekenNamesFlat[j])) {
-        // console.log(airtableNamesFlat[i])
+        // console.log('Airtable contains: ' + airtableNamesFlat[i])
+        // console.log('Lütteken contains: ' + lüttekenNamesFlat[j])
+        combinedNames.push(airtableNamesFlat[i])
       }
     }
   }
-
+console.log('Both lists contained: ')
+console.log(combinedNames)
 // flattening an array - turns an array into string
 // substring match airtable is a substring of lütteken
 // use lists to create mapping function
-// empty function that
-//   return canonical name
-//   provide name and return canonical
+// function that
+//   provides name and returns canonical name
 //   array of arrays
 //   loop through the name that matches
 
@@ -194,6 +196,4 @@ csvtojson()
 //   column B - Airtable
 //   column C - Lütteken
 
-// console.log(airtableNamesFlat)
-console.log(lüttekenNamesFlat)
 })
