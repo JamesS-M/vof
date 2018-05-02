@@ -169,31 +169,18 @@ csvtojson()
   let airtableNamesFlat = flatten(airtableNames)
   let lüttekenNamesFlat = flatten(lüttekenNames)
   
-  //Loops through airtable names
+  //Loops through airtable names, and lütteken names
   for (let i = 0; i < airtableNamesFlat.length; i++) {
     for (let j = 0; j < lüttekenNamesFlat.length; j++) {
 
-
+      //If results are the same, push results to combinedNames
       if (airtableNamesFlat[i].includes(lüttekenNamesFlat[j])) {
-        // console.log('Airtable contains: ' + airtableNamesFlat[i])
-        // console.log('Lütteken contains: ' + lüttekenNamesFlat[j])
         combinedNames.push(airtableNamesFlat[i])
       }
     }
   }
+
+//Logs the combined names
 console.log('Both lists contained: ')
 console.log(combinedNames)
-// flattening an array - turns an array into string
-// substring match airtable is a substring of lütteken
-// use lists to create mapping function
-// function that
-//   provides name and returns canonical name
-//   array of arrays
-//   loop through the name that matches
-
-//   excel
-//   column A - Canonical
-//   column B - Airtable
-//   column C - Lütteken
-
 })
