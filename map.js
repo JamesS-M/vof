@@ -1,8 +1,6 @@
 //Loads the csv file of names
-const csvFile = '/Users/James/Documents/CS/Operatic\ Fame/Folder/Mapping\ CSVs/Mapping.csv'
+const csvFile = '/Users/James/Documents/CS/OperaticFame/Folder/Mapping\ CSVs/Mapping.csv'
 const csv=require('csvtojson')
-const fs = require('fs')
-const Json2csvParser=require('json2csv').Parser;
 
 //Declares an empty array which will hold all of the nested arrays from the csv file
 let map =[];
