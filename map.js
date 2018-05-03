@@ -14,7 +14,6 @@ let canonIt = (name) => {
   if (name != ''){
     for (let i = 0; i < map.length; i++) {
       if (map[i].includes(name)) {
-        // if (mappingArr[i])
         return map[i][0]
       }
     }
