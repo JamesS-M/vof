@@ -52,6 +52,7 @@ function redoName(name) {
   if (regex.test(str)) {
     var res = str.split(", ");
     if (res[1]) {
+      console.log(res[1].substr(0, res[1].length) + ' ' + res[0])
     return res[1].substr(0,res[1].length) + ' ' + res[0];
     } else {
       return res[0]
@@ -146,7 +147,7 @@ for (let i = 0; i < knownKeywords.length; i++) {
 
 //Outputs the formatted names whose keywords match knownKeywords
 for (let i = 0; i < finalKeywords.length; i++) {
-  // let lüttekenNames = [];
+  
   if (finalKeywords[i] && finalName[i]) {
   lüttekenNames.push(finalName)
   }
