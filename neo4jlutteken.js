@@ -112,7 +112,6 @@ function neo4jLüttekenExport(lüttekenArr) {
       session.close()
     })
   }
-session.close();
 return
 }  
 
