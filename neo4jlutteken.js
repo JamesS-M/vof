@@ -54,6 +54,7 @@ function extractName(manynames) {
   return cleanNames
 }
 
+//Extracts the name of the opera
 function extractOpera(opera) {
   let cleanOperas = [];
   if(opera.charAt(0) === '<') {
@@ -81,7 +82,7 @@ let canonIt = (name) => {
   }
 }
 
-//Exports airtable to neo4j when secondary source is present
+//Exports info from Airtable into neo4j
 function neo4jAirtableExport(airtableArr) {
   let query;
   for (let i = 0; i < airtableArr.length; i++) {
@@ -99,7 +100,8 @@ function neo4jAirtableExport(airtableArr) {
 session.close();  
 return
 }
-  
+ 
+//Exports info from Lütteken into neo4j 
 function neo4jLüttekenExport(lüttekenArr) {
   for (let i = 0; i < lüttekenArr.length; i++) {
     let query = 'MERGE (m:Journal {Journal:"'+lüttekenArr[i][4]+'"}) MERGE (n:Critic {Critic:"'+lüttekenArr[i][7]+'"}) MERGE (b:Reviews {Review:"'+extractReview(lüttekenArr[i][3])+'", Publication:"'+lüttekenArr[i][5]+', '+lüttekenArr[i][8]+'", Year:"'+lüttekenArr[i][6]+'"}) MERGE (v:Ideal_Opera {Ideal_Opera:"'+extractIdealOpera(lüttekenArr[i][21])+'"})'
@@ -143,6 +145,7 @@ function extractNameQuotes(manynames) {
   return cleanNames
 }
 
+//Extracts review title
 function extractReview(review) {
   let cleanReview = [];
   let pattern = /:(.*\.):.*>/
@@ -156,6 +159,7 @@ function extractReview(review) {
   }
 }
 
+//Extracts ideal opera title
 let extractIdealOpera = (opera) => {
   let cleanOpera = [];
   let pattern = /: (.*?)[\.-\>]/
@@ -167,12 +171,10 @@ let extractIdealOpera = (opera) => {
 
 //Flattens arrays
 var flatten = function(a, shallow,r){
-  if(!r){ r = []}
-   
+  if(!r){ r = []} 
 if (shallow) {
   return r.concat.apply(r,a);
   }
-      
    for(var i=0; i<a.length; i++){
         if(a[i].constructor == Array){
             flatten(a[i],shallow,r);
@@ -183,7 +185,7 @@ if (shallow) {
     return r;
 }
 
-//Makes sure connection to neo4j is not running
+//Makes sure connection to neo4j is not running before running following scripts
 serverStop()
 
 //map will hold the subarrays for name mapping
@@ -199,6 +201,7 @@ csvtojson()
 //An array which determines which Lütteken row to select
 let musikwerkArr = [];
 
+//Loads csvLütteken file and pushes desired rows into new array
 csvtojson()
 .fromFile(csvLüttekenMusikwerk)
 .on('csv', (csvRow) => {
@@ -210,6 +213,7 @@ csvtojson()
 //Declares an array that will hold Lütteken's data
 let lüttekenArr = []
 let keywordsArr = [];
+
 //Loads csvLütteken
 csvtojson()
 .fromFile(csvLütteken)
@@ -227,7 +231,8 @@ csvtojson()
     }
   }
 })
-  
+
+//After Lütteken is loaded and manipulated, exports to neo4j
 .on('done', () => {
   console.log('Finished loading Lütteken. Starting export to NEO4J.')
   neo4jLüttekenExport(lüttekenArr) //828 rows 
@@ -236,13 +241,14 @@ csvtojson()
 //Declares an array used to hold all of airtable's data
 let airtableArr = [];
 
-//Loads csvAirtable
+//Loads csvAirtable and pushes data into a new array
 csvtojson()
 .fromFile(csvAirtable)
 .on('csv', (csvRow) => {
   airtableArr.push(csvRow)
 })
 
+//After Airtable is loaded, export to neo4j
 .on('done', () => {   
   neo4jAirtableExport(airtableArr) //8850 rows  
   console.log('Finished loading Airtable. Starting export to NEO4J')
