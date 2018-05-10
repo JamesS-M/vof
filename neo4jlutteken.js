@@ -2,10 +2,11 @@ const csvLütteken = '/Users/James/Documents/CS/OperaticFame/Folder/Input/Lütte
 const csvAirtable = '/Users/James/Documents/CS/OperaticFame/Folder/Input/csv/Calendar_Items.csv'
 const csvLüttekenMusikwerk = '/Users/James/Documents/CS/OperaticFame/Folder/Input/Lütteken/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv'
 const csvMap = '/Users/James/Documents/CS/OperaticFame/Folder/Mapping\ CSVs/nameMapping.csv'
+
 const csvtojson=require('csvtojson')
 const fs = require('fs')
 const Json2csvParser=require('json2csv').Parser;
-var cypher = require('cypher-stream')('bolt://localhost:7687', 'neo4j', 'james');
+
 var neo4j = require('neo4j-driver').v1;
 var driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "james"));
 var session = driver.session()
