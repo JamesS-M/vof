@@ -86,21 +86,21 @@ let canonIt = (name) => {
 function neo4jAirtableExport(airtableArr) {
   let query;
   for (let i = 0; i < airtableArr.length; i++) {
-    if (airtableArr[i][12] != ''){
-      query = 'MERGE (m:OperaPerformances {OriginalTitle:"'+airtableArr[i][1]+'", Performance_Date: "'+airtableArr[i][2]+'", Performance_Language:"'+airtableArr[i][3]+'" }) MERGE (b:Secondary_Source {Secondary_Source:"'+airtableArr[i][11]+'", Page: "'+airtableArr[i][12]+'"}) MERGE (v:Composer {Composer:"'+canonIt(airtableArr[i][4])+'"}) MERGE (x:Troupe {Troupe:"'+airtableArr[i][8]+'"}) MERGE (z:Place {Place:"'+airtableArr[i][7]+'"})'
+    if (airtableArr[i][12] == ''){
+      let query = 'MERGE (m:Opera_Performance {Original_Title: '+airtableArr[i][1]+', Alternate_Title: '+airtableArr[i][2]+', Date: '+airtableArr[i][5]+', Language: '+airtableArr[i][3]+'}) MERGE (n:Journal {Journal: '+airtableArr[i][9]+', Page: '+airtableArr[i][10]+'}) MERGE (b:Person {Composer:'+canonIt(airtableArr[i][4])+'}) MERGE (v:Troupe {Troupe: '+airtableArr[i][8]+'}) MERGE (c:Place {City: '+airtableArr[i][7]+'})'
     } else {
-      query = 'MERGE (m:OperaPerformances {OriginalTitle:"'+airtableArr[i][1]+'", Performance_Date: "'+airtableArr[i][6]+'", Performance_Language:"'+airtableArr[i][3]+'" }) MERGE (b:Journal {Journal:"'+airtableArr[i][9]+'", Page: "'+airtableArr[i][10]+'"}) MERGE (v:Composer {Composer:"'+canonIt(airtableArr[i][4])+'"}) MERGE (x:Troupe {Troupe:"'+airtableArr[i][8]+'"})MERGE (z:Place {Place:"'+airtableArr[i][7]+'"})'
+      let query = 'MERGE (m:Opera_Performance {Original_Title: '+airtableArr[i][1]+', Alternate_Title: '+airtableArr[i][2]+', Date: '+airtableArr[i][5]+', Language: '+airtableArr[i][3]+'}) MERGE (n:Secondary_Source {Secondary_Source: '+airtableArr[i][11]+', Page: '+airtableArr[i][12]+'}) MERGE (b:Person {Composer:'+canonIt(airtableArr[i][4])+'}) MERGE (v:Troupe {Troupe: '+airtableArr[i][8]+'}) MERGE (c:Place {City: '+airtableArr[i][7]+'})'  
     }
     session
     .run(query)
     .then(function (result) {
-      console.log('Airtable finished ' + i)
+      console.log('Airtable finished processing ' + i)
     })
   }
 session.close();  
 return
 }
- 
+
 //Exports info from Lütteken into neo4j 
 function neo4jLüttekenExport(lüttekenArr) {
   for (let i = 0; i < lüttekenArr.length; i++) {
@@ -108,7 +108,7 @@ function neo4jLüttekenExport(lüttekenArr) {
     session
     .run(query)
     .then(function (result) {
-      console.log('Lütteken finished ' + i)
+      console.log('Lütteken finished processing ' + i)
       session.close()
     })
   }
