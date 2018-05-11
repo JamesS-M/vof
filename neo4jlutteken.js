@@ -97,9 +97,9 @@ function formatDate(date) {
 //Exports info from Airtable into neo4j. Creates nodes and relationships
 function neo4jAirtableExport(airtableArr) {
   let query;
-  for (let i = 0; i < airtableArr.length; i++) {
+  for (let i = 0; i < 500; i++) {
     if (airtableArr[i][12] == '') {
-      query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+extractNameQuotes(airtableArr[i][1])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Journal {Journal: "'+airtableArr[i][9]+'", Page: "'+airtableArr[i][10]+'"}) MERGE (b:Person {Composer:"'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][8]+'"}) MERGE (c:Place {City: "'+airtableArr[i][7]+'"}) MERGE (b)-[:Wrote]->(m) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
+      query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+extractNameQuotes(airtableArr[i][1])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Journal {Journal: "'+airtableArr[i][9]+'", Page: "'+airtableArr[i][10]+'"}) MERGE (b:Person {Composer:"'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][8]+'"}) MERGE (c:Place {City: "'+airtableArr[i][7]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
     } else {
       query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+extractNameQuotes(airtableArr[i][1])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+airtableArr[i][11]+'", Page: "'+airtableArr[i][12]+'"}) MERGE (b:Person {Composer: "'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][8]+'"}) MERGE (c:Place {City: "'+airtableArr[i][7]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
     }
@@ -115,8 +115,8 @@ return;
 
 //Exports info from Lütteken into neo4j 
 function neo4jLüttekenExport(lüttekenArr) {
-  for (let i = 0; i < lüttekenArr.length; i++) {
-    let query = 'MERGE (m:Journal {Journal:"'+lüttekenArr[i][4]+'"}) MERGE (n:Person {Critic:"'+reorderName(lüttekenArr[i][7])+'"}) MERGE (b:Review {Review:"'+lüttekenArr[i][3]+'", Publication:"'+lüttekenArr[i][5]+', '+lüttekenArr[i][8]+'", Year:"'+lüttekenArr[i][6]+'"}) MERGE (v:Ideal_Opera {Ideal_Opera:"'+extractIdealOpera(lüttekenArr[i][33])+'"}) MERGE (m)-[:Contains]->(b) MERGE (n)-[:Wrote]-(b) MERGE (b)-[:Review_Of]-(v)';
+  for (let i = 0; i < 500; i++) {
+    let query = 'MERGE (m:Journal {Journal:"'+lüttekenArr[i][4]+'"}) MERGE (n:Person {Critic:"'+reorderName(lüttekenArr[i][7])+'"}) MERGE (b:Review {Review:"'+extractReview(lüttekenArr[i][3])+'", Publication:"'+lüttekenArr[i][5]+', '+lüttekenArr[i][8]+'", Year:"'+lüttekenArr[i][6]+'"}) MERGE (v:Ideal_Opera {Ideal_Opera:"'+extractIdealOpera(lüttekenArr[i][33])+'"}) MERGE (m)-[:Contains]->(b) MERGE (n)-[:Wrote]-(b) MERGE (b)-[:Review_Of]-(v)';
     session
     .run(query)
     .then(function (result) {
@@ -160,15 +160,9 @@ function extractNameQuotes(manynames) {
 //Extracts review title
 function extractReview(review) {
   let cleanReview = [];
-  let pattern = /:(.*\.):.*>/;
-  while(matches = pattern.exec(review)) {
-    cleanReview.push(matches[1]);
-    if (matches[1].charAt(0) == '[') {
-    return cleanReview;
-    
-    }
-    return cleanReview;
-  }
+  let pattern = /: \[?(.*?)\]?$/
+  let match = pattern.exec(review)
+  return match[1]
 }
 
 //Extracts ideal opera title
