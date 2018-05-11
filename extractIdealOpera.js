@@ -8,7 +8,7 @@ let extractIdealOpera = (opera) => {
   let pattern = /: (.*?)[\.-\>]/
   while(matches = pattern.exec(opera)) {
     cleanOpera.push(matches[1]);
-    return cleanOpera
+    return cleanOpera;
   }
 }
 
