@@ -5,10 +5,10 @@ const csvLüttekenMusikwerk = '/Users/James/Dropbox/Visualizing\ Operatic\ Fame/
 const csvMap = '/Users/James/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/nameMapping.csv';
 
 //File paths for Estelle(uncomment these)
-const csvLütteken = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Reviews.csv'
-const csvAirtable = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Calendar_Items.csv'
-const csvLüttekenMusikwerk = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv'
-const csvMap = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/nameMapping.csv'
+// const csvLütteken = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Reviews.csv'
+// const csvAirtable = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Calendar_Items.csv'
+// const csvLüttekenMusikwerk = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv'
+// const csvMap = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/nameMapping.csv'
 
 
 
@@ -115,13 +115,17 @@ function neo4jAirtableExport(airtableArr) {
   for (let i = 0; i < airtableArr.length; i++) {
     if (airtableArr[i][11] == '') {
       if (airtableArr[i][12] == 'French Opera') {
+        // console.log(i)
       query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+extractNameQuotes(airtableArr[i][1])+'", Genre:"'+airtableArr[i][12]+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Journal {Journal: "'+airtableArr[i][8]+'", Page: "'+airtableArr[i][9]+'"}) MERGE (b:Person {Composer:"'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
       } else {
+        // console.log(i)
         query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+extractNameQuotes(airtableArr[i][1])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Journal {Journal: "'+airtableArr[i][8]+'", Page: "'+airtableArr[i][9]+'"}) MERGE (b:Person {Composer:"'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';}
     } else {
       if (airtableArr[i][12] == 'French Opera') {
-      query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+extractNameQuotes(airtableArr[i][1])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'", Genre:"'+airtableArr[i][12]+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+airtableArr[i][10]+'", Page: "'+airtableArr[i][11]+'"}) MERGE (b:Person {Composer: "'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
+        // console.log(i)
+      query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+extractNameQuotes(airtableArr[i][1])+'", Genre:"'+airtableArr[i][12]+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+airtableArr[i][10]+'", Page: "'+airtableArr[i][11]+'"}) MERGE (b:Person {Composer: "'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
       } else {
+        // console.log(i)
         query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+extractNameQuotes(airtableArr[i][1])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+airtableArr[i][10]+'", Page: "'+airtableArr[i][11]+'"}) MERGE (b:Person {Composer: "'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
     }
     }
