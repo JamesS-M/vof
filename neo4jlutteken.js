@@ -11,13 +11,6 @@ const csvMap = '/Users/James/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/name
 // const csvMap = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/nameMapping.csv'
 
 
-
-
-
-
-
-
-
 const csvtojson=require('csvtojson');
 const fs = require('fs');
 const Json2csvParser=require('json2csv').Parser;
@@ -115,25 +108,21 @@ function neo4jAirtableExport(airtableArr) {
   for (let i = 0; i < airtableArr.length; i++) {
     if (airtableArr[i][11] == '') {
       if (airtableArr[i][12] == 'French Opera') {
-        // console.log(i)
       query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+extractNameQuotes(airtableArr[i][1])+'", Genre:"'+airtableArr[i][12]+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Journal {Journal: "'+airtableArr[i][8]+'", Page: "'+airtableArr[i][9]+'"}) MERGE (b:Person {Composer:"'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
       } else {
-        // console.log(i)
         query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+extractNameQuotes(airtableArr[i][1])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Journal {Journal: "'+airtableArr[i][8]+'", Page: "'+airtableArr[i][9]+'"}) MERGE (b:Person {Composer:"'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';}
     } else {
       if (airtableArr[i][12] == 'French Opera') {
-        // console.log(i)
       query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+extractNameQuotes(airtableArr[i][1])+'", Genre:"'+airtableArr[i][12]+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+airtableArr[i][10]+'", Page: "'+airtableArr[i][11]+'"}) MERGE (b:Person {Composer: "'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
       } else {
-        // console.log(i)
         query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+extractNameQuotes(airtableArr[i][1])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+airtableArr[i][10]+'", Page: "'+airtableArr[i][11]+'"}) MERGE (b:Person {Composer: "'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
     }
     }
-    session
-    .run(query)
-    .then(function (result) {
-      console.log('Airtable finished processing row ' + i);
-    })
+    // session
+    // .run(query)
+    // .then(function (result) {
+    //   console.log('Airtable finished processing row ' + i);
+    // })
   }
 session.close();  
 return;
@@ -151,7 +140,7 @@ function neo4jLüttekenExport(lüttekenArr) {
     session
     .run(query)
     .then(function (result) {
-      console.log('Lütteken finished processing row ' + i) ;
+      // console.log('Lütteken finished processing row ' + i) ;
       session.close();
     })
   }
@@ -283,10 +272,12 @@ csvtojson()
 .fromFile(csvAirtable)
 .on('csv', (csvRow) => {
   airtableArr.push(csvRow);
+  console.log(formatDate(csvRow[5]))
+  
 })
 
 //After Airtable is loaded, export to neo4j
 .on('done', () => {   
-  console.log('Finished loading Airtable. Starting export to NEO4J');
-  neo4jAirtableExport(airtableArr); //9126 rows  
+  // console.log('Finished loading Airtable. Starting export to NEO4J');
+  // neo4jAirtableExport(airtableArr); //9126 rows  
 })
