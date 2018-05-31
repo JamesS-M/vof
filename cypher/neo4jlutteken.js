@@ -1,8 +1,8 @@
 //File paths for James (comment these out)
-const csvLütteken = '/Users/James/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Reviews.csv'
-const csvAirtable = '/Users/James/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Calendar_Items.csv'
-const csvLüttekenMusikwerk = '/Users/James/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
-const csvMap = '/Users/James/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/nameMapping.csv';
+const csvLütteken = '../Input/Lütteken/Reviews.csv'
+const csvAirtable = '../Input/csv/Calendar_Items.csv'
+const csvLüttekenMusikwerk = '../Input/Lütteken/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
+const csvMap = '../Mapping\ CSVsß/nameMapping.csv';
 
 //File paths for Estelle(uncomment these)
 // const csvLütteken = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Reviews.csv'
@@ -272,7 +272,7 @@ csvtojson()
 .fromFile(csvAirtable)
 .on('csv', (csvRow) => {
   airtableArr.push(csvRow);
-  console.log(formatDate(csvRow[5]))
+  // console.log(formatDate(csvRow[5]))
   
 })
 
