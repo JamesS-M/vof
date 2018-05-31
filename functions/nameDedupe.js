@@ -1,5 +1,5 @@
-const LüttekenCSV='/Users/James/Documents/CS/OperaticFame/Folder/Input/csv/Reviews.csv'
-const AirtableCSV='/Users/James/Documents/CS/OperaticFame/Folder/Input/csv/Composers.csv'
+const LüttekenCSV='../Input/csv/Reviews.csv'
+const AirtableCSV='../Input/csv/Composers.csv'
 
 const csvtojson=require('csvtojson')
 const fs = require('fs')
