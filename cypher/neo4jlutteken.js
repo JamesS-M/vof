@@ -1,15 +1,14 @@
 //File paths for James (comment these out)
-const csvLütteken = '../Input/Lütteken/Reviews.csv'
-const csvAirtable = '../Input/csv/Calendar_Items.csv'
-const csvLüttekenMusikwerk = '../Input/Lütteken/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
-const csvMap = '../Mapping\ CSVsß/nameMapping.csv';
+const csvLütteken = '../../Lütteken/CSV/Reviews.csv'
+const csvAirtable = '../../Lütteken/CSV/Calendar_Items.csv'
+const csvLüttekenMusikwerk = '../../Lütteken/CSV/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
+const csvMap = '../../Mapping\ CSVs/nameMapping.csv';
 
 //File paths for Estelle(uncomment these)
 // const csvLütteken = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Reviews.csv'
 // const csvAirtable = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Calendar_Items.csv'
 // const csvLüttekenMusikwerk = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv'
 // const csvMap = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/nameMapping.csv'
-
 
 const csvtojson=require('csvtojson');
 const fs = require('fs');
@@ -50,12 +49,12 @@ let knownKeywords = ["Englische Oper (Gattung)",
 have '<, >', pushes into array without modifying */
 function extractName(manynames) {
   let cleanNames = [];
-  if (manynames.charAt(0) === '<') {
+  if (manynames[0] === '<') {
     let pattern = /<(.*?)>/g;
     while(matches = pattern.exec(manynames)) {
       cleanNames.push(matches[1]);
     }
-  } else if (manynames.charAt(0) === ''){
+  } else if (manynames[0] === ''){
   } else {
     cleanNames.push(manynames);
   }
@@ -86,7 +85,7 @@ let canonIt = (name) => {
       }
     }  
   } else {
-    return 'unknown';
+    return null;
   }
 }
 
@@ -104,25 +103,26 @@ function formatDate(date) {
 
 //Exports info from Airtable into neo4j. Creates nodes and relationships
 function neo4jAirtableExport(airtableArr) {
+  console.log("starting airtable export")
   let query;
   for (let i = 0; i < airtableArr.length; i++) {
-    if (airtableArr[i][11] == '') {
-      if (airtableArr[i][12] == 'French Opera') {
-      query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+extractNameQuotes(airtableArr[i][1])+'", Genre:"'+airtableArr[i][12]+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Journal {Journal: "'+airtableArr[i][8]+'", Page: "'+airtableArr[i][9]+'"}) MERGE (b:Person {Composer:"'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
+    if (airtableArr[i]['Theater_Journal'] == '') {
+      if (airtableArr[i]['Genre'] == 'French Opera') {
+      query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+extractNameQuotes(airtableArr[i][2])+'", Genre:"'+airtableArr[i][4]+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][2])+'", Alternate_Title: "'+airtableArr[i][3]+'", Date: "'+formatDate(airtableArr[i][7])+'", Language: "'+airtableArr[i][5]+'"}) MERGE (n:Journal {Journal: "'+airtableArr[i][12]+'", Page: "'+airtableArr[i][13]+'"}) MERGE (b:Person {Composer:"'+extractNameQuotes(airtableArr[i][6])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][11]+'"}) MERGE (c:Place {City: "'+airtableArr[i][8]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
       } else {
-        query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+extractNameQuotes(airtableArr[i][1])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Journal {Journal: "'+airtableArr[i][8]+'", Page: "'+airtableArr[i][9]+'"}) MERGE (b:Person {Composer:"'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';}
+        query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+extractNameQuotes(airtableArr[i][2])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][2])+'", Alternate_Title: "'+airtableArr[i][3]+'", Date: "'+formatDate(airtableArr[i][7])+'", Language: "'+airtableArr[i][5]+'"}) MERGE (n:Journal {Journal: "'+airtableArr[i][12]+'", Page: "'+airtableArr[i][13]+'"}) MERGE (b:Person {Composer:"'+extractNameQuotes(airtableArr[i][6])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][11]+'"}) MERGE (c:Place {City: "'+airtableArr[i][8]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';}
     } else {
-      if (airtableArr[i][12] == 'French Opera') {
-      query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+extractNameQuotes(airtableArr[i][1])+'", Genre:"'+airtableArr[i][12]+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+airtableArr[i][10]+'", Page: "'+airtableArr[i][11]+'"}) MERGE (b:Person {Composer: "'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
+      if (airtableArr[i][4] == 'French Opera') {
+      query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+extractNameQuotes(airtableArr[i][2])+'", Genre:"'+airtableArr[i][4]+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][2])+'", Alternate_Title: "'+airtableArr[i][3]+'", Date: "'+formatDate(airtableArr[i][7])+'", Language: "'+airtableArr[i][5]+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+airtableArr[i][14]+'", Page: "'+airtableArr[i][15]+'"}) MERGE (b:Person {Composer: "'+extractNameQuotes(airtableArr[i][6])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][11]+'"}) MERGE (c:Place {City: "'+airtableArr[i][8]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
       } else {
-        query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+extractNameQuotes(airtableArr[i][1])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][1])+'", Alternate_Title: "'+airtableArr[i][2]+'", Date: "'+formatDate(airtableArr[i][5])+'", Language: "'+airtableArr[i][3]+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+airtableArr[i][10]+'", Page: "'+airtableArr[i][11]+'"}) MERGE (b:Person {Composer: "'+extractNameQuotes(airtableArr[i][4])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][7]+'"}) MERGE (c:Place {City: "'+airtableArr[i][6]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
+        query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+extractNameQuotes(airtableArr[i][2])+'"}) MERGE (m:Opera_Performance {Original_Title: "'+extractNameQuotes(airtableArr[i][2])+'", Alternate_Title: "'+airtableArr[i][3]+'", Date: "'+formatDate(airtableArr[i][7])+'", Language: "'+airtableArr[i][5]+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+airtableArr[i][14]+'", Page: "'+airtableArr[i][15]+'"}) MERGE (b:Person {Composer: "'+extractNameQuotes(airtableArr[i][6])+'"}) MERGE (v:Troupe {Troupe: "'+airtableArr[i][11]+'"}) MERGE (c:Place {City: "'+airtableArr[i][8]+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
     }
     }
-    // session
-    // .run(query)
-    // .then(function (result) {
-    //   console.log('Airtable finished processing row ' + i);
-    // })
+    session
+    .run(query)
+    .then(function (result) {
+      console.log('Airtable finished processing row ' + i);
+    })
   }
 session.close();  
 return;
@@ -140,7 +140,7 @@ function neo4jLüttekenExport(lüttekenArr) {
     session
     .run(query)
     .then(function (result) {
-      // console.log('Lütteken finished processing row ' + i) ;
+      console.log('Lütteken finished processing row ' + i) ;
       session.close();
     })
   }
@@ -167,7 +167,7 @@ function reorderName(name) {
 //Removes quotation marks
 function extractNameQuotes(manynames) {
   let cleanNames = [];
-  switch(manynames.charAt(0)) {
+  switch(manynames[0]) {
     case '\"':
     cleanNames.push(manynames.substring(1, manynames.length - 1));
     break;
@@ -220,8 +220,9 @@ let map =[];
 //Loads nameMapping.csv and pushes each row to a subarray
 csvtojson()
 .fromFile(csvMap)
-.on('csv', (csvRow) => {
+.then((csvRow) => {
   map.push(csvRow);
+  console.log('mapping loaded')
 })
 
 //An array which determines which Lütteken row to select
@@ -230,7 +231,7 @@ let musikwerkArr = [];
 //Loads csvLütteken file and pushes desired rows into new array
 csvtojson()
 .fromFile(csvLüttekenMusikwerk)
-.on('csv', (csvRow) => {
+.then((csvRow) => {
   if (csvRow[1] == 'x') {
     musikwerkArr.push(csvRow[2]);
   }
@@ -243,8 +244,7 @@ let keywordsArr = [];
 //Loads csvLütteken
 csvtojson()
 .fromFile(csvLütteken)
-.on('csv', (csvRow) => {
-  
+.then((csvRow) => {
   //Keywords is used to determine which rows to select
   let keyword = csvRow['Keyword'];
 
@@ -259,9 +259,9 @@ csvtojson()
 })
 
 //After Lütteken is loaded and manipulated, exports to neo4j
-.on('done', () => {
+.then(() => {
   // console.log('Finished loading Lütteken. Starting export to NEO4J.');
-  // neo4jLüttekenExport(lüttekenArr); //828 rows 
+  neo4jLüttekenExport(lüttekenArr); //828 rows 
 })
 
 //Declares an array used to hold all of airtable's data
@@ -270,14 +270,15 @@ let airtableArr = [];
 //Loads csvAirtable and pushes data into a new array
 csvtojson()
 .fromFile(csvAirtable)
-.on('csv', (csvRow) => {
+.then((csvRow) => {
   airtableArr.push(csvRow);
-  // console.log(formatDate(csvRow[5]))
+  console.log(csvRow[0])
   
 })
 
 //After Airtable is loaded, export to neo4j
-.on('done', () => {   
+.then(() => {   
   // console.log('Finished loading Airtable. Starting export to NEO4J');
-  // neo4jAirtableExport(airtableArr); //9126 rows  
+  // console.log(airtableArr)
+  neo4jAirtableExport(airtableArr); //9126 rows  
 })
