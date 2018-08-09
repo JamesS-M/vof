@@ -4,12 +4,6 @@ const csvAirtable = '../../Lütteken/CSV/Calendar_Items.csv'
 const csvLüttekenMusikwerk = '../../Lütteken/CSV/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
 const csvMap = '../../Mapping\ CSVs/nameMapping.csv';
 
-//File paths for Estelle(uncomment these)
-// const csvLütteken = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Reviews.csv'
-// const csvAirtable = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Calendar_Items.csv'
-// const csvLüttekenMusikwerk = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv'
-// const csvMap = '/Users/Estelle/Dropbox/Visualizing\ Operatic\ Fame/CSV\ files/nameMapping.csv'
-
 const csvtojson=require('csvtojson');
 const fs = require('fs');
 const Json2csvParser=require('json2csv').Parser;

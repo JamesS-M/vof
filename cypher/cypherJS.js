@@ -21,16 +21,7 @@ session
       console.log(result.records[i].toObject().n.labels)
       console.log(result.records[i].toObject().n.properties)
       console.log(result.records[i].toObject().r)
-      console.log('-----------------------------------')
-
-      
+      console.log('-----------------------------------')      
     }
     driver.close()
   })
-    
-/*
-    create one-node component
-      one-property component
-
-    Choose any id which shows all properties of said node
-*/
