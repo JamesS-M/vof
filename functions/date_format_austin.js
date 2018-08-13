@@ -1,5 +1,5 @@
 const csvAirtable = '/Users/James/Desktop/Calendar_prefinal.csv'
-const csvtojson=require('csvtojson');
+const csvtojson=require('csvtojson/v1');
 
 
 function formatDate(date) {

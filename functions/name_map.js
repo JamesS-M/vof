@@ -1,6 +1,6 @@
 //Loads the csv file of names
 const csvFile = '/Users/James/Documents/CS/OperaticFame/Folder/Mapping\ CSVs/nameMapping.csv'
-const csvtojson=require('csvtojson')
+const csvtojson=require('csvtojson/v1')
 
 //Declares an empty array which will hold all of the nested arrays from the csv file
 let map =[];

@@ -1,18 +1,18 @@
 //File paths for James (comment these out)
-const csvLütteken = '../../Lütteken/CSV/Reviews.csv'
-const csvAirtable = '../../Lütteken/CSV/Calendar_Items.csv'
-const csvLüttekenMusikwerk = '../../Lütteken/CSV/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
-const csvMap = '../../Mapping\ CSVs/nameMapping.csv';
+const csvLütteken = '/Users/James/Documents/CS/OperaticFame/js/Lütteken/CSV/Reviews.csv'
+const csvAirtable = '/Users/James/Documents/CS/OperaticFame/js/Lütteken/CSV/Calendar_Items.csv'
+const csvLüttekenMusikwerk = '/Users/James/Documents/CS/OperaticFame/js/Lütteken/CSV/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
+const csvMap = '/Users/James/Documents/CS/OperaticFame/js/Mapping\ CSVs/nameMapping.csv';
 
-const csvtojson=require('csvtojson');
+const csvtojson=require('csvtojson/v1');
 const fs = require('fs');
-const Json2csvParser=require('json2csv').Parser;
+// const Json2csvParser=require('json2csv').Parser;
 
 var neo4j = require('neo4j-driver').v1;
 var driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "james"));
 var session = driver.session();
 function serverStop(){
-  session.close();
+  driver.close();
 }
 
 let knownKeywords = ["Englische Oper (Gattung)",
@@ -97,8 +97,9 @@ function formatDate(date) {
 
 //Exports info from Airtable into neo4j. Creates nodes and relationships
 function neo4jAirtableExport(airtableArr) {
-  console.log("starting airtable export")
+  // console.log("starting airtable export")
   let query;
+  // console.log(airtableArr)
   for (let i = 0; i < airtableArr.length; i++) {
     if (airtableArr[i]['Theater_Journal'] == '') {
       if (airtableArr[i]['Genre'] == 'French Opera') {
@@ -115,10 +116,9 @@ function neo4jAirtableExport(airtableArr) {
     session
     .run(query)
     .then(function (result) {
-      console.log('Airtable finished processing row ' + i);
+      // console.log('Airtable finished processing row ' + i);
     })
   }
-session.close();  
 return;
 }
 
@@ -134,8 +134,7 @@ function neo4jLüttekenExport(lüttekenArr) {
     session
     .run(query)
     .then(function (result) {
-      console.log('Lütteken finished processing row ' + i) ;
-      session.close();
+      // console.log('Lütteken finished processing row ' + i) ;
     })
   }
 
@@ -206,7 +205,6 @@ if (shallow) {
 }
 
 //Makes sure connection to neo4j is not running before running following scripts
-serverStop();
 
 //map will hold the subarrays for name mapping
 let map =[];
@@ -214,9 +212,9 @@ let map =[];
 //Loads nameMapping.csv and pushes each row to a subarray
 csvtojson()
 .fromFile(csvMap)
-.then((csvRow) => {
+.on('json',(csvRow) => {
   map.push(csvRow);
-  console.log('mapping loaded')
+  // console.log('mapping loaded')
 })
 
 //An array which determines which Lütteken row to select
@@ -225,7 +223,7 @@ let musikwerkArr = [];
 //Loads csvLütteken file and pushes desired rows into new array
 csvtojson()
 .fromFile(csvLüttekenMusikwerk)
-.then((csvRow) => {
+.on('json',(csvRow) => {
   if (csvRow[1] == 'x') {
     musikwerkArr.push(csvRow[2]);
   }
@@ -238,7 +236,7 @@ let keywordsArr = [];
 //Loads csvLütteken
 csvtojson()
 .fromFile(csvLütteken)
-.then((csvRow) => {
+.on('json',(csvRow) => {
   //Keywords is used to determine which rows to select
   let keyword = csvRow['Keyword'];
 
@@ -253,7 +251,7 @@ csvtojson()
 })
 
 //After Lütteken is loaded and manipulated, exports to neo4j
-.then(() => {
+.on('done',() => {
   // console.log('Finished loading Lütteken. Starting export to NEO4J.');
   neo4jLüttekenExport(lüttekenArr); //828 rows 
 })
@@ -264,14 +262,15 @@ let airtableArr = [];
 //Loads csvAirtable and pushes data into a new array
 csvtojson()
 .fromFile(csvAirtable)
-.then((csvRow) => {
+.on('json',(csvRow) => {
   airtableArr.push(csvRow);
-  console.log(csvRow[0])
+  // console.log(csvRow[0])
+  // console.log(airtableArr)
   
 })
 
 //After Airtable is loaded, export to neo4j
-.then(() => {   
+.on('done',() => {   
   // console.log('Finished loading Airtable. Starting export to NEO4J');
   // console.log(airtableArr)
   neo4jAirtableExport(airtableArr); //9126 rows  

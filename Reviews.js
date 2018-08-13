@@ -5,7 +5,7 @@ highlighted in Schlagworte.csv */
 const csvFilePath='/Users/James/Documents/NEO4J/Folder/Input/Reviews.csv'
 const csvOutputFilePath = '/Users/James/Documents/NEO4J/Folder/Output/Reviews.csv'
 
-const csvtojson=require('csvtojson')
+const csvtojson=require('csvtojson/v1')
 const fs = require('fs')
 const Json2csvParser=require('json2csv').Parser;
 

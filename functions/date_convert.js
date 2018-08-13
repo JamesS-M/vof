@@ -1,5 +1,5 @@
 const csv = '/Users/James/Desktop/Calendar.csv'
-const csvtojson=require('csvtojson')
+const csvtojson=require('csvtojson/v1')
 const fs = require('fs')
 const Json2csvParser=require('json2csv').Parser;
 

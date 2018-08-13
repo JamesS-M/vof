@@ -7,7 +7,7 @@ saves a new csv.
 const csvFilePath='/Users/James/Documents/CS/OperaticFame/Folder/Input/csv/Composers.csv'
 const csvOutputFilePath = '/Users/James/Documents/CS/Folder/Output/Composers.csv'
 
-const csvtojson=require('csvtojson')
+const csvtojson=require('csvtojson/v1')
 const fs = require('fs')
 const Json2csvParser=require('json2csv').Parser;
 
