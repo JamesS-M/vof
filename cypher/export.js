@@ -1,10 +1,10 @@
 //Files
-const csvLütteken = '/Users/James/Dropbox/Work/OperaticFame/CSVs/Lütteken/CSV/Reviews.csv'
-// const csvLütteken = '/Users/james/Dropbox/Work/OperaticFame/CSVs/Lütteken/CSV/Reviews to be Edited #2.xlsx'
-const csvAirtable = '/Users/James/Dropbox/Work/OperaticFame/CSVs/Lütteken/CSV/Calendar_Items.csv'
-const csvLüttekenMusikwerk = '/Users/James/Dropbox/Work/OperaticFame/CSVs/Lütteken/CSV/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
-const csvMap = '/Users/James/Dropbox/Work/OperaticFame/CSVs/Mapping\ CSVs/nameMapping.csv';
-
+// const csvLütteken = '/Users/James/Dropbox/Work/OperaticFame/Visualizing\ Operatic\ Fame/CSV\ files/Reviews.csv'
+const csvLütteken = '/Users/james/Dropbox/Work/OperaticFame/Visualizing\ Operatic\ Fame/CSV\ files/Edited Reviews.csv'
+const csvAirtable = '/Users/james/Dropbox/Work/OperaticFame/CSVs Backup/Lütteken/CSV/Calendar_Items.csv'
+// const csvAirtable = '/Users/James/Dropbox/Work/OperaticFame/Visualizing\ Operatic\ Fame/CSV\ files/Calendar_Items.csv'
+const csvLüttekenMusikwerk = '/Users/James/Dropbox/Work/OperaticFame/Visualizing\ Operatic\ Fame/CSV\ files/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
+const csvMap = '/Users/James/Dropbox/Work/OperaticFame/Visualizing\ Operatic\ Fame/CSV\ filesVs/nameMapping.csv';
 
 //Requires
 const csvtojson = require('csvtojson/v1');
@@ -18,10 +18,8 @@ const session = driver.session();
 //Functions
 const functions = require('/Users/james/Documents/GitHub/vof/functions/functions.js')
 
-
-let map =[];
-
 //Loads nameMapping.csv and pushes each row to a subarray
+let map =[];
 csvtojson()
 .fromFile(csvMap)
 .on('csv', (csvRow) => {
@@ -43,15 +41,11 @@ csvtojson()
 
 //Declares an array that will hold Lütteken's data
 let lüttekenArr = [];
-let keywordsArr = [];
 
 //Loads csvLütteken
 csvtojson()
 .fromFile(csvLütteken)
 .on('csv', (csvRow) => {
-  
-  //Keywords is used to determine which rows to select
-  let keyword = csvRow['Keyword'];
 
   //Loops through musikwerkArr, selecting jsonObj that matches
   for (let i = 0; i < musikwerkArr.length; i++) {
@@ -66,7 +60,7 @@ csvtojson()
 //After Lütteken is loaded and manipulated, exports to neo4j
 .on('done', () => {
   console.log('Finished loading Lütteken. Starting export to NEO4J.');
-  neo4jLüttekenExport(lüttekenArr); //828 rows 
+  // neo4jLüttekenExport(lüttekenArr); //828 rows 
 })
 
 //Declares an array used to hold all of airtable's data
@@ -82,10 +76,8 @@ csvtojson()
 //After Airtable is loaded, export to neo4j
 .on('done', () => {
   console.log('Finished loading Airtable. Starting export to NEO4J');
-  // neo4jAirtableExport(airtableArr);
+  neo4jAirtableExport(airtableArr);
 })
-
-
 
   function neo4jLüttekenExport (lüttekenArr) {
     console.log(lüttekenArr.length+' lütteken rows to process')
@@ -99,17 +91,34 @@ csvtojson()
       let Translated = lüttekenArr[i][11]
       let Ideal_Opera = functions.extract_ideal_opera(lüttekenArr[i][13])
 
+      let Composer = lüttekenArr[i][18]
+      let Theatre_Director = lüttekenArr[i][20]
+      let Performer = lüttekenArr[i][21]
+      let Ruler = lüttekenArr[i][22]
+      let Aesthetician = lüttekenArr[i][23]
+      let Critic = lüttekenArr[i][24]
+      let Impresario = lüttekenArr[i][25]
+      let Saint = lüttekenArr[i][26]
+      let Diplomat = lüttekenArr[i][27]
+      let Librettist = lüttekenArr[i][28]
 
-      // let query;
+      let Country = lüttekenArr[i][31]
+      let Court = lüttekenArr[i][32]
+      let Theater = lüttekenArr[i][33]
+      let City = lüttekenArr[i][34]
 
+      let query;
 
-      let query = 'MERGE (m:Journal {Journal:"'+lüttekenArr[i][4]+'", Translated:"'+lüttekenArr[i][11]+'"}) MERGE (n:Person {Critic:"'+functions.name_reorder(lüttekenArr[i][7])+'", Composer:"'+lüttekenArr[i][9]+'", Troupe_Director:"'+lüttekenArr[i][19]+'", Theatre_Director:"'+lüttekenArr[i][20]+'", Performer:"'+lüttekenArr[i][21]+'", Ruler:"'+lüttekenArr[i][22]+'", Aesthetician:"'+lüttekenArr[i][23]+'", Diplomat:"'+lüttekenArr[i][24]+'", Librettist:"'+lüttekenArr[i][25]+'"}) MERGE (b:Review {Review:"'+functions.extract_review(lüttekenArr[i][3])+'", Publication:"'+lüttekenArr[i][5]+', '+lüttekenArr[i][8]+'", Year:"'+lüttekenArr[i][6]+'"}) MERGE (v:Ideal_Opera {Ideal_Opera:"'+functions.extract_ideal_opera(lüttekenArr[i][33])+'"}) MERGE (s:Place {Country: "'+lüttekenArr[i][28]+'", City: "'+functions.extract_name(lüttekenArr[i][27])+'", Court:"'+lüttekenArr[i][29]+'", Theatre: "'+lüttekenArr[i][30]+'"}) MERGE (m)-[:Contains]->(b) MERGE (n)-[:Wrote]-(b) MERGE (b)-[:Review_Of]-(v)';
-      console.log(query)
-      session
-      .run(query)
-      .then(function (result) {
-        // console.log('Lütteken finished processing row ' + i) ;
-      })
+      if (lüttekenArr[i][18] != '') {
+        console.log(`${i} ==============================================`)
+        console.log(lüttekenArr[i][18])
+      }
+      // let query = 'MERGE (m:Journal {Journal:"'+lüttekenArr[i][4]+'", Translated:"'+lüttekenArr[i][11]+'"}) MERGE (n:Person {Critic:"'+functions.name_reorder(lüttekenArr[i][7])+'", Composer:"'+lüttekenArr[i][9]+'", Troupe_Director:"'+lüttekenArr[i][19]+'", Theatre_Director:"'+lüttekenArr[i][20]+'", Performer:"'+lüttekenArr[i][21]+'", Ruler:"'+lüttekenArr[i][22]+'", Aesthetician:"'+lüttekenArr[i][23]+'", Diplomat:"'+lüttekenArr[i][24]+'", Librettist:"'+lüttekenArr[i][25]+'"}) MERGE (b:Review {Review:"'+functions.extract_review(lüttekenArr[i][3])+'", Publication:"'+lüttekenArr[i][5]+', '+lüttekenArr[i][8]+'", Year:"'+lüttekenArr[i][6]+'"}) MERGE (v:Ideal_Opera {Ideal_Opera:"'+functions.extract_ideal_opera(lüttekenArr[i][33])+'"}) MERGE (s:Place {Country: "'+lüttekenArr[i][28]+'", City: "'+functions.extract_name(lüttekenArr[i][27])+'", Court:"'+lüttekenArr[i][29]+'", Theatre: "'+lüttekenArr[i][30]+'"}) MERGE (m)-[:Contains]->(b) MERGE (n)-[:Wrote]-(b) MERGE (b)-[:Review_Of]-(v)';
+      // session
+      // .run(query)
+      // .then(function (result) {
+      //   console.log('Lütteken finished processing row ' + i) ;
+      // })
     }
     return
   }
@@ -148,7 +157,7 @@ csvtojson()
       .then(function (result) {
         console.log('Airtable finished processing row ' + i);
       })
+
     }
     return;
   }
-
