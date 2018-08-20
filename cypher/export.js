@@ -1,9 +1,9 @@
 //Files
-const csvLütteken = '/Users/James/Dropbox/Work/OperaticFame/CSVs/Lütteken/CSV/Reviews.csv'
-// const csvLütteken = '/Users/james/Dropbox/Work/OperaticFame/CSVs/Lütteken/CSV/Reviews to be Edited #2.xlsx'
-const csvAirtable = '/Users/James/Dropbox/Work/OperaticFame/CSVs/Lütteken/CSV/Calendar_Items.csv'
-const csvLüttekenMusikwerk = '/Users/James/Dropbox/Work/OperaticFame/CSVs/Lütteken/CSV/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
-const csvMap = '/Users/James/Dropbox/Work/OperaticFame/CSVs/Mapping\ CSVs/nameMapping.csv';
+// const csvLütteken = '/Users/James/Dropbox/Work/OperaticFame/CSVs/Lütteken/CSV/Reviews.csv'
+const csvLütteken = '/Users/james/Dropbox/Work/OperaticFame/CSVs\ Backup/Lütteken/CSV/Reviews to be Edited #2.xlsx'
+const csvAirtable = '/Users/James/Dropbox/Work/OperaticFame/CSVs\ Backup/Lütteken/CSV/Calendar_Items.csv'
+const csvLüttekenMusikwerk = '/Users/James/Dropbox/Work/OperaticFame/CSVs\ Backup/Lütteken/CSV/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
+const csvMap = '/Users/James/Dropbox/Work/OperaticFame/CSVs\ Backup/Mapping\ CSVs/nameMapping.csv';
 
 
 //Requires
@@ -66,7 +66,7 @@ csvtojson()
 //After Lütteken is loaded and manipulated, exports to neo4j
 .on('done', () => {
   console.log('Finished loading Lütteken. Starting export to NEO4J.');
-  neo4jLüttekenExport(lüttekenArr); //828 rows 
+  // neo4jLüttekenExport(lüttekenArr); //828 rows 
 })
 
 //Declares an array used to hold all of airtable's data
@@ -82,7 +82,7 @@ csvtojson()
 //After Airtable is loaded, export to neo4j
 .on('done', () => {
   console.log('Finished loading Airtable. Starting export to NEO4J');
-  // neo4jAirtableExport(airtableArr);
+  neo4jAirtableExport(airtableArr);
 })
 
 
