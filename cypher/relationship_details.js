@@ -2,21 +2,7 @@ var neo4j = require('neo4j-driver').v1;
 var driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "james"));
 var session = driver.session()
 
-let query = 'MATCH(n)-[r]-(m) where id(n)=75 return keys(m), n,m,r'
-
-let relationships = [];
-let performed_by = 0;
-let references = 0;
-let performance_of = 0;
-let performed_in = 0;
-let wrote = 0;
-
-let m_labels = [];
-let opera_performance = 0;
-let journal = 0;
-let ideal_opera = 0;
-let place = 0;
-let troupe = 0;
+let query = 'MATCH(n)-[r]-(m) where id(n)=11415 return keys(m), n,m,r'
 
 let t = new Date
 let t2
@@ -28,23 +14,31 @@ let relationshipMap = {};
 session
 .run(query)
 .then(function (result) {
+
   driver.close()
   t2 = new Date
 
+  //Loops through the returned records
   for (var i = 0; i < result.records.length; i++) {
 
+    
+
+    // Assigns variables to a list of the labels and relationships
     let m = result.records[i].toObject().m
     let r = []
     r.push(result.records[i].toObject().r.type)
 
+    // Loops through the labels, counting each one
     for (let j = 0; j < m.labels.length; j++) {
+      // console.log(result.records[i].toObject().m.properties)
       if (labelMap[m.labels[j]] === undefined ) {
         labelMap[m.labels[j]] = 0
       }
       labelMap[m.labels[j]]++
+      labelMap[m.labels[j]['properties']] = result.records[i].toObject().m.properties[0]
     }
 
-
+    // Loops through the relationships, counting each one
     for (let k = 0; k < r.length; k++) {
       if (relationshipMap[r[k]] === undefined ) {
         relationshipMap[r[k]] = 0
@@ -55,12 +49,16 @@ session
 })
 
 .then(function (result) {
+  // Assembles the object
   let object = {
-    labelMap,
-    relationshipMap
+    labels: {labelMap},
+    relationships: {relationshipMap}
   }
 
+  console.log('==========================================')
   console.log(object)
+
+  // Returns query time and calculation time
   t3 = new Date
   console.log('Query time:')
   console.log(t2-t)
