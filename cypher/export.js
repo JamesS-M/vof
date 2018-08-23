@@ -5,13 +5,12 @@ const csvAirtable = '/Users/James/Dropbox/Work/OperaticFame/CSVs\ Backup/Lüttek
 const csvLüttekenMusikwerk = '/Users/James/Dropbox/Work/OperaticFame/CSVs\ Backup/Lütteken/CSV/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
 const csvMap = '/Users/James/Dropbox/Work/OperaticFame/CSVs\ Backup/Mapping\ CSVs/nameMapping.csv';
 
-
 //Requires
 const csvtojson = require('csvtojson/v1');
 const fs = require('fs');
 
 //Neo4j
-const neo4j = require('neo4j-driver').v1;
+const neo4j = require('neo4j-driver').v1
 const driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "james"));
 const session = driver.session();
 
@@ -139,9 +138,9 @@ csvtojson()
       let Secondary_Source_Page = airtableArr[i][15]
 
       if (Theatre_Journal != '') {
-        query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+Ideal_Opera+'"}) MERGE (m:Opera_Performance {Original_Title: "'+Ideal_Opera+'", Alternate_Title: "'+Alternate_Title+'", Date: "'+Performance_Date+'", Language: "'+Performance_Language+'"}) MERGE (n:Journal {Journal: "'+Theatre_Journal+'", Page: "'+Theatre_Page+'"}) MERGE (b:Person {Composer:"'+Composer+'"}) MERGE (v:Troupe {Troupe: "'+Troupe+'"}) MERGE (c:Place {City: "'+Place+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
+        query = 'MERGE (x:Ideal_Opera {Ideal_Opera:"'+Ideal_Opera+'", Name:"'+Ideal_Opera+'"}) MERGE (m:Opera_Performance {Original_Title: "'+Ideal_Opera+'", Alternate_Title: "'+Alternate_Title+'", Date: "'+Performance_Date+'", Language: "'+Performance_Language+'", Name:"'+Ideal_Opera+' | '+Performance_Date+'"}) MERGE (n:Journal {Journal: "'+Theatre_Journal+'", Page: "'+Theatre_Page+'", Name:"'+Theatre_Journal+' | '+Theatre_Page+'"}) MERGE (b:Person {Composer:"'+Composer+'", Name:"'+Composer+'"}) MERGE (v:Troupe {Troupe: "'+Troupe+'", Name:"'+Troupe+'"}) MERGE (c:Place {City: "'+Place+'", Name:"'+Place+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
       } else {
-        query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+Ideal_Opera+'"}) MERGE (m:Opera_Performance {Original_Title: "'+Ideal_Opera+'", Alternate_Title: "'+Alternate_Title+'", Date: "'+Performance_Date+'", Language: "'+Performance_Language+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+Secondary_Source+'", Page: "'+Secondary_Source_Page+'"}) MERGE (b:Person {Composer: "'+Composer+'"}) MERGE (v:Troupe {Troupe: "'+Troupe+'"}) MERGE (c:Place {City: "'+Place+'"}) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
+        query = 'MERGE (x:Ideal_Opera {Ideal_Opera: "'+Ideal_Opera+'", Name:"'+Ideal_Opera+'"}) MERGE (m:Opera_Performance {Original_Title: "'+Ideal_Opera+'", Alternate_Title: "'+Alternate_Title+'", Date: "'+Performance_Date+'", Language: "'+Performance_Language+'", Name:"'+Ideal_Opera+' | '+Performance_Date+'"}) MERGE (n:Secondary_Source {Secondary_Source: "'+Secondary_Source+'", Page: "'+Secondary_Source_Page+'", Name:"'+Secondary_Source+' | '+Secondary_Source_Page+'"}) MERGE (b:Person {Composer: "'+Composer+'", Name:"'+Composer+'"}) MERGE (v:Troupe {Troupe: "'+Troupe+'", Name:"'+Troupe+'"}) MERGE (c:Place {City: "'+Place+'", Name:"'+Place+'" }) MERGE (b)-[:Wrote]->(x) MERGE (m)-[:Performed_In]->(c) MERGE (m)-[:Performed_By]->(v) MERGE (n)-[:References]->(m) MERGE (m)-[:Performance_Of]-(x)';
       }
       session
       .run(query)

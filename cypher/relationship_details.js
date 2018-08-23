@@ -11,6 +11,7 @@ let t3
 let labelMap = {};
 let relationshipMap = {};
 
+
 session
 .run(query)
 .then(function (result) {
@@ -22,20 +23,31 @@ session
   for (var i = 0; i < result.records.length; i++) {
 
     
+    // let properties = result.records[i].toObject().m.properties
+    // console.log(properties)
 
     // Assigns variables to a list of the labels and relationships
     let m = result.records[i].toObject().m
     let r = []
     r.push(result.records[i].toObject().r.type)
+    let properties = result.records[i].toObject().m.properties
+    // console.log(properties)
+
+
+    for (let l = 0; l < Object.keys(properties).length; l++) {
+      // if (properties[l])
+      console.log(Object.keys(properties)[l])
+      console.log('=====')
+
+    }
+
 
     // Loops through the labels, counting each one
     for (let j = 0; j < m.labels.length; j++) {
-      // console.log(result.records[i].toObject().m.properties)
       if (labelMap[m.labels[j]] === undefined ) {
         labelMap[m.labels[j]] = 0
       }
       labelMap[m.labels[j]]++
-      labelMap[m.labels[j]['properties']] = result.records[i].toObject().m.properties[0]
     }
 
     // Loops through the relationships, counting each one
@@ -57,6 +69,7 @@ session
 
   console.log('==========================================')
   console.log(object)
+  debugger
 
   // Returns query time and calculation time
   t3 = new Date

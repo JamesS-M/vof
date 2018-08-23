@@ -1,8 +1,9 @@
 var neo4j = require('neo4j-driver').v1;
 var driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "james"));
+// var driver = neo4j.driver("bolt://hobby-kapooclnoaicgbkepnkkcnbl.dbs.graphenedb.com:24786", neo4j.auth.basic("james", "b.7Vv42A3Qt3Z8.fgeqtr3c9iEk2R15"))
 var session = driver.session();
 
-let query = 'match (n)-[r]-(m) where id(n) = 151993 return n,r'
+let query = 'match (n)-[r]-(m)  return n,r'
 
 session
     .run(query)
