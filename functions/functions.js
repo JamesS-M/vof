@@ -77,14 +77,11 @@ module.exports = {
 
 
   extract_ideal_opera: function (opera) {
-    if (opera.length == 0) {
-      return 
-    }
     let cleanOpera = [];
     let pattern = /: (.*?)[\.-\>]/
     while(matches = pattern.exec(opera)) {
       cleanOpera.push(matches[1]);
-      return cleanOpera.toString();
+      return cleanOpera;
     }
   },
 
@@ -103,20 +100,8 @@ module.exports = {
         }
     }
     return r;
-  },
-
-  extract_theatre: function (manynames) {
-    let cleanNames = [];
-    if (manynames.charAt(0) === '<') {
-      let pattern = /<(.*?),/g;
-      while(matches = pattern.exec(manynames)) {
-        cleanNames.push(matches[1]);
-      }
-    } else {
-      cleanNames.push(manynames)
-    }
-    return cleanNames.toString()
   }
+
 }
 
 
