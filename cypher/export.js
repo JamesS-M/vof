@@ -164,7 +164,6 @@ csvtojson()
       //Query Pieces
 
       //Person
-
     if (Person != 'No Person') {
 
 
@@ -399,9 +398,6 @@ csvtojson()
 
 
 
-
-
-
       //Publications
       if (Publication_2 != '') {
         queryJournal = 'MERGE (journal:Journal {Journal:"'+Journal+'", Continuation:"'+Publication_1+', '+Publication_2+'", Translated:"'+Translated+'"}) '
@@ -467,12 +463,12 @@ csvtojson()
 
       query = queryJournal + queryReview + queryOpera + queryPerson + queryPlace + queryRels
 
-      console.log(query)
+      // console.log(query)
       session
-      // .run(query)
-      // .then(function (result) {
-      //   console.log('Lütteken finished processing row ' + i) ;
-      // })
+      .run(query)
+      .then(function (result) {
+        console.log('Lütteken finished processing row ' + i) ;
+      })
     }
     return
   }
