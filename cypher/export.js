@@ -1,18 +1,32 @@
+const dotenv = require('dotenv').config()
+
+let connection = process.env.BOLT_CONNECTION
+let connection_user = process.env.BOLT_USER
+let connection_password = process.env.BOLT_PASSWORD
+
+const neo4j = require('neo4j-driver').v1
+const driver = neo4j.driver(connection, neo4j.auth.basic(connection_user, connection_password));
+const session = driver.session();
+
+
 //Files
-// const csvLütteken = '/Users/James/Dropbox/Work/OperaticFame/CSVs/Lütteken/CSV/Reviews.csv'
+// const csvLütteken = '/Users/James/Dropbox/Work/OperaticFame/CSVs\ Backup/Lütteken/CSV/Reviews.csv'
 const csvLütteken = '/Users/james/Dropbox/Work/OperaticFame/CSVs\ Backup/Lütteken/CSV/Edited\ Reviews.csv'
-const csvAirtable = '/Users/James/Dropbox/Work/OperaticFame/CSVs\ Backup/Lütteken/CSV/Calendar_Items.csv'
+const csvAirtable = '/Users/James/Dropbox/Work/OperaticFame/CSVs\ Backup/Lütteken/CSV/Calendar_Items_FINAL.csv'
 const csvLüttekenMusikwerk = '/Users/James/Dropbox/Work/OperaticFame/CSVs\ Backup/Lütteken/CSV/Musikwerk\ Estelle\ adjusted\ May\ 2018.csv';
 const csvMap = '/Users/James/Dropbox/Work/OperaticFame/CSVs\ Backup/Mapping\ CSVs/nameMapping.csv';
 
 //Requires
 const csvtojson = require('csvtojson/v1');
 const fs = require('fs');
+const md5 = require('md5')
 
-//Neo4j
-const neo4j = require('neo4j-driver').v1
-const driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "james"));
-const session = driver.session();
+
+// let dbuser = 'Estelle'
+// let dbpass = md5('estelle')
+
+
+
 
 //Functions
 const functions = require('../functions/functions.js')
@@ -81,7 +95,7 @@ csvtojson()
 //After Airtable is loaded, export to neo4j
 .on('done', () => {
   console.log('Finished loading Airtable. Starting export to NEO4J');
-  // neo4jAirtableExport(airtableArr); //13591 rows
+  neo4jAirtableExport(airtableArr); //13591 rows
 })
 
 
@@ -89,6 +103,11 @@ csvtojson()
   function neo4jLüttekenExport (lüttekenArr) {
     console.log(lüttekenArr.length+' lütteken rows to process')
     for (let i = 0; i < lüttekenArr.length; i++) {
+
+
+      dbuser = 'Paul'
+      dbpass = md5('paul')
+
 
       //Publications
       let Review = functions.extract_review(lüttekenArr[i][3])
@@ -100,18 +119,17 @@ csvtojson()
 
       //Opera
       let Ideal_Opera = functions.extract_ideal_opera(lüttekenArr[i][36])
+      let originOpera
 
       //People
       let Person = functions.name_reorder(functions.extract_name(lüttekenArr[i][17]))
       let Composer = functions.name_reorder(lüttekenArr[i][18])
       let Theatre_Director = functions.name_reorder(lüttekenArr[i][20])
       let Performer = functions.name_reorder(lüttekenArr[i][21])
-      let Ruler = functions.name_reorder(lüttekenArr[i][22])
       let Aesthetician = functions.name_reorder(lüttekenArr[i][23])
       let Critic = functions.name_reorder(lüttekenArr[i][24])
       let Impresario = functions.name_reorder(lüttekenArr[i][25])
-      let Saint = functions.name_reorder(lüttekenArr[i][26])
-      let Diplomat = functions.name_reorder(lüttekenArr[i][27])
+      let Saint = lüttekenArr[i][26]
       let Librettist = functions.name_reorder(lüttekenArr[i][28])
 
       //Place
@@ -131,319 +149,311 @@ csvtojson()
       let relsPerson
       let relsPlace
       let relsPublication
+      let originJournal
+
+      let originPerson
+      let originOrigin
+
+
+      // console.log(lüttekenArr[i][3])
+      // console.log(Review)
+      // console.log('=====================')
 
 
       if (Person != '') {
         Person = Person
+        originOrigin = 'MERGE (origin)-[:ORIGIN]-(person) '
       } else if (Composer != '') {
         Person = Composer
+        originOrigin = 'MERGE (origin)-[:ORIGIN]-(person) '
       } else if (Theatre_Director != '') {
         Person = Theatre_Director
+        originOrigin = 'MERGE (origin)-[:ORIGIN]-(person) '
       } else if (Performer != '') {
         Person = Performer
-      } else if (Ruler != '') {
-        Person = Ruler
+        originOrigin = 'MERGE (origin)-[:ORIGIN]-(person) '
       } else if (Aesthetician != '') {
-        Person  = Aesthetician
+        Person  = Aesthetician 
+        originOrigin = 'MERGE (origin)-[:ORIGIN]-(person) '
       } else if (Critic != '') {
         Person = Critic
+        originOrigin = 'MERGE (origin)-[:ORIGIN]-(person) '
       } else if (Impresario != '') {
         Person = Impresario
+        originOrigin = 'MERGE (origin)-[:ORIGIN]-(person) '
       } else if (Saint != '') {
         Person = Saint
-      } else if (Diplomat != '') {
-        Person  = Diplomat
+        originOrigin = 'MERGE (origin)-[:ORIGIN]-(person) '
       } else if (Librettist != '') {
         Person  = librettist
+        originOrigin = 'MERGE (origin)-[:ORIGIN]-(person) '
       } else {
         Person = 'No Person'
+        originOrigin = ''
       }
+      
 
 
-
-      //Query Pieces
+    //Query Pieces
 
       //Person
     if (Person != 'No Person') {
 
 
-      if (Composer != '' && Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Diplomat != '' && Librettist != '') {
-       queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
-       relsPerson = 'MERGE (composer)-[:]-() MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() MERGE (librettist)-[:]-()'
+      if (Composer != '' && Theatre_Director != '' && Performer != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Librettist != '') {
+       queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
+       relsPerson = 'MERGE (composer)-[:COMPOSED]-(ideal_opera) MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera) MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) MERGE (librettist)-[:WROTE_TEXT]-(ideal_opera) '
+       originPerson = 'MERGE (origin)-[:ORIGIN]-(composer) MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) MERGE (origin)-[:ORIGIN]-(librettist)'
+
       
-      } else if (Composer != '' && Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Diplomat != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) '
-        relsPerson = 'MERGE (composer)-[:]-() MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() '
+      } else if (Composer != '' && Theatre_Director != '' && Performer != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
+        relsPerson = 'MERGE (composer)-[:COMPOSED]-(ideal_opera) MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) ' 
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(composer) MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) '
       
-      } else if (Composer != '' && Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
-        relsPerson = 'MERGE (composer)-[:]-() MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() ' 
+      } else if (Composer != '' && Theatre_Director != '' && Performer != '' && Aesthetician != '' && Critic != '' && Impresario != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) '
+        relsPerson = 'MERGE (composer)-[:COMPOSED]-(ideal_opera) MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(composer) MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) '
       
-      } else if (Composer != '' && Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) '
-        relsPerson = 'MERGE (composer)-[:]-() MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() '
+      } else if (Composer != '' && Theatre_Director != '' && Performer != '' && Aesthetician != '' && Critic != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) '
+        relsPerson = 'MERGE (composer)-[:COMPOSED]-(ideal_opera) MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(composer) MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) '
       
-      } else if (Composer != '' && Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) '
-        relsPerson = 'MERGE (composer)-[:]-() MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() '
-      
-      } else if (Composer != '' && Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) '
-        relsPerson = 'MERGE (composer)-[:]-() MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() '
-      
-      } else if (Composer != '' && Theatre_Director != '' && Performer != '' && Ruler != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) '
-        relsPerson = 'MERGE (composer)-[:]-() MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() '
+      } else if (Composer != '' && Theatre_Director != '' && Performer != '' && Aesthetician != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) '
+        relsPerson = 'MERGE (composer)-[:COMPOSED]-(ideal_opera) MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(composer) MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) '
       
       } else if (Composer != '' && Theatre_Director != '' && Performer != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) '
-        relsPerson = 'MERGE (composer)-[:]-() MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() '
+        relsPerson = 'MERGE (composer)-[:COMPOSED]-(ideal_opera) MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera)  '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(composer) MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) '
+      
+      } else if (Composer != '' && Theatre_Director != '' && Performer != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) '
+        relsPerson = 'MERGE (composer)-[:COMPOSED]-(ideal_opera) MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(composer) MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) '
       
       } else if (Composer != '' && Theatre_Director != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) '
-        relsPerson = 'MERGE (composer)-[:]-() MERGE (theatre_director)-[:]-() '
+        relsPerson = 'MERGE (composer)-[:COMPOSED]-(ideal_opera) MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(composer) MERGE (origin)-[:ORIGIN]-(theatre_director) '
       
       } else if (Composer != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (composer:Composer {Name:"'+Composer+'"}) '
-        relsPerson = 'MERGE (composer)-[:]-() '
+        relsPerson = 'MERGE (composer)-[:COMPOSED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(composer) '
       
-      } else if (Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Diplomat != '' && Librettist != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
-        relsPerson = 'MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() MERGE (librettist)-[:]-() '
+      } else if (Theatre_Director != '' && Performer != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Librettist != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
+        relsPerson = 'MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) MERGE (librettist)-[:WROTE_TEXT]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) MERGE (origin)-[:ORIGIN]-(librettist) '
 
-      } else if (Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Diplomat != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) '
-        relsPerson = 'MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() '
+      } else if (Theatre_Director != '' && Performer != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != ''){
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
+        relsPerson = 'MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) '
 
-      } else if (Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != ''){
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
-        relsPerson = 'MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() '
+      } else if (Theatre_Director != '' && Performer != '' && Aesthetician != '' && Critic != '' && Impresario != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) '
+        relsPerson = 'MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) '
 
-      } else if (Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) '
-        relsPerson = 'MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() '
+      } else if (Theatre_Director != '' && Performer != '' && Aesthetician != '' && Critic != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) '
+        relsPerson = 'MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) '
 
-      } else if (Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) '
-        relsPerson = 'MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() '
-
-      } else if (Theatre_Director != '' && Performer != '' && Ruler != '' && Aesthetician != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) '
-        relsPerson = 'MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() '
-
-      } else if (Theatre_Director != '' && Performer != '' && Ruler != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) '
-        relsPerson = 'MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() MERGE (ruler)-[:]-() '
+      } else if (Theatre_Director != '' && Performer != '' && Aesthetician != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) '
+        relsPerson = 'MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) '
 
       } else if (Theatre_Director != '' && Performer != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) '
-        relsPerson = 'MERGE (theatre_director)-[:]-() MERGE (performer)-[:]-() '
+        relsPerson = 'MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera)  '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) '
+
+      } else if (Theatre_Director != '' && Performer != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) '
+        relsPerson = 'MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) MERGE (performer)-[:PERFORMED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(theatre_director) MERGE (origin)-[:ORIGIN]-(performer) '
 
       } else if (Theatre_Director != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (theatre_director:Theatre_Director {Name:"'+Theatre_Director+'"}) '
-        relsPerson = 'MERGE (theatre_director)-[:]-() '
+        relsPerson = 'MERGE (theatre_director)-[:DIRECTED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(theatre_director) '
 
-      } else if (Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Diplomat != '' && Librettist != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
-        relsPerson = 'MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() MERGE (librettist)-[:]-() '
+      } else if (Performer != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Librettist != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
+        relsPerson = 'MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) MERGE (librettist)-[:WROTE_TEXT]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) MERGE (origin)-[:ORIGIN]-(librettist) '
 
-      } else if (Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Diplomat != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) '
-        relsPerson = 'MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() '
+      } else if (Performer != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
+        relsPerson = 'MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) '
 
-      } else if (Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
-        relsPerson = 'MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() '
+      } else if (Performer != '' && Aesthetician != '' && Critic != '' && Impresario != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) '
+        relsPerson = 'MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) '
 
-      } else if (Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) '
-        relsPerson = 'MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() '
+      } else if (Performer != '' && Aesthetician != '' && Critic != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) '
+        relsPerson = 'MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) '
 
-      } else if (Performer != '' && Ruler != '' && Aesthetician != '' && Critic != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) '
-        relsPerson = 'MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() '
-
-      } else if (Performer != '' && Ruler != '' && Aesthetician != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) '
-        relsPerson = 'MERGE (performer)-[:]-() MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() '
-
-      } else if (Performer != '' && Ruler != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) '
-        relsPerson = 'MERGE (performer)-[:]-() MERGE (ruler)-[:]-() '
+      } else if (Performer != '' && Aesthetician != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) '
+        relsPerson = 'MERGE (performer)-[:PERFORMED]-(ideal_opera)  MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(performer) MERGE (origin)-[:ORIGIN]-(aesthetician) '
 
       } else if (Performer != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) '
-        relsPerson = 'MERGE (performer)-[:]-() '
+        relsPerson = 'MERGE (performer)-[:PERFORMED]-(ideal_opera)  '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(performer) '
 
-      } else if (Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Diplomat != '' && Librettist != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
-        relsPerson = 'MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() MERGE (librettist)-[:]-() '
+      } else if (Performer != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (performer:Performer {Name:"'+Performer+'"}) '
+        relsPerson = 'MERGE (performer)-[:PERFORMED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(performer) '
 
-      } else if (Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Diplomat != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) '
-        relsPerson = 'MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() '
-
-      } else if (Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
-        relsPerson = 'MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() '
-
-      } else if (Ruler != '' && Aesthetician != '' && Critic != '' && Impresario != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) '
-        relsPerson = 'MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() '
-
-      } else if (Ruler != '' && Aesthetician != '' && Critic != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) '
-        relsPerson = 'MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() '
-
-      } else if (Ruler != '' && Aesthetician != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) '
-        relsPerson = 'MERGE (ruler)-[:]-() MERGE (aesthetician)-[:]-() '
-
-      } else if (Ruler != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (ruler:Ruler {Name:"'+Ruler+'"}) '
-        relsPerson = 'MERGE (ruler)-[:]-() '
-
-      } else if (Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Diplomat != '' && Librettist != '') {
-         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
-         relsPerson = 'MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() MERGE (librettist)-[:]-() '
-
-      } else if (Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Diplomat != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) '
-        relsPerson = 'MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() '
+      } else if (Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '' && Librettist != '') {
+         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
+         relsPerson = 'MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) MERGE (librettist)-[:WROTE_TEXT]-(ideal_opera) '
+         originPerson = 'MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) MERGE (origin)-[:ORIGIN]-(librettist) '
 
       } else if (Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
-        relsPerson = 'MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() '
+        relsPerson = 'MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) '
+
+      } else if (Aesthetician != '' && Critic != '' && Impresario != '' && Saint != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
+        relsPerson = 'MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) '
 
       } else if (Aesthetician != '' && Critic != '' && Impresario != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) '
-        relsPerson = 'MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() MERGE (impresario)-[:]-() '
+        relsPerson = 'MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) '
 
       } else if (Aesthetician != '' && Critic != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) '
-        relsPerson = 'MERGE (aesthetician)-[:]-() MERGE (critic)-[:]-() '
+        relsPerson = 'MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) MERGE (critic)-[:CRITIQUED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(aesthetician) MERGE (origin)-[:ORIGIN]-(critic) '
 
       } else if (Aesthetician != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (aesthetician:Aesthetician {Name:"'+Aesthetician+'"}) '
-        relsPerson = 'MERGE (aesthetician)-[:]-() '
+        relsPerson = 'MERGE (aesthetician)-[:CRITIQUED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(aesthetician) '
 
-      } else if (Critic != '' && Impresario != '' && Saint != '' && Diplomat != '' && Librettist != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
-        relsPerson = 'MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() MERGE (librettist)-[:]-() '
-
-      } else if (Critic != '' && Impresario != '' && Saint != '' && Diplomat != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) '
-        relsPerson = 'MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() '
+      } else if (Critic != '' && Impresario != '' && Saint != '' && Librettist != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
+        relsPerson = 'MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) MERGE (librettist)-[:WROTE_TEXT]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) MERGE (origin)-[:ORIGIN]-(librettist) '
 
       } else if (Critic != '' && Impresario != '' && Saint != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
-        relsPerson = 'MERGE (critic)-[:]-() MERGE (impresario)-[:]-() MERGE (saint)-[:]-() '
+        relsPerson = 'MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) '
+
+      } else if (Critic != '' && Impresario != '' && Saint != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
+        relsPerson = 'MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) '
 
       } else if (Critic != '' && Impresario != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) '
-        relsPerson = 'MERGE (critic)-[:]-() MERGE (impresario)-[:]-() '
+        relsPerson = 'MERGE (critic)-[:CRITIQUED]-(ideal_opera) MERGE (impresario)-[:PRODUCED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(critic) MERGE (origin)-[:ORIGIN]-(impresario) '
 
       } else if (Critic != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (critic:Critic {Name:"'+Critic+'"}) '
-        relsPerson = 'MERGE (critic)-[:]-() '
+        relsPerson = 'MERGE (critic)-[:CRITIQUED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(critic) '
 
-      } else if (Impresario != '' && Saint != '' && Diplomat != '' && Librettist != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"})'
-        relsPerson = 'MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() MERGE (librettist)-[:]-() '
-
-      } else if (Impresario != '' && Saint != '' && Diplomat != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) '
-        relsPerson = 'MERGE (impresario)-[:]-() MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() '
+      } else if (Impresario != '' && Saint != '' && Librettist != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"})'
+        relsPerson = 'MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) MERGE (librettist)-[:WROTE_TEXT]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) MERGE (origin)-[:ORIGIN]-(librettist) '
 
       } else if (Impresario != '' && Saint != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
-        relsPerson = 'MERGE (impresario)-[:]-() MERGE (saint)-[:]-() '
+        relsPerson = 'MERGE (impresario)-[:PRODUCED]-(ideal_opera) MERGE (ideal_opera)-[:CELEBRATES]-(saint) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(impresario) MERGE (origin)-[:ORIGIN]-(saint) '
+
 
       } else if (Impresario != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (impresario:Impresario {Name:"'+Impresario+'"}) '
-        relsPerson = 'MERGE (impresario)-[:]-() '
+        relsPerson = 'MERGE (impresario)-[:PRODUCED]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(impresario) '
 
-      } else if (Saint != '' && Diplomat != '' && Librettist != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
-        relsPerson = 'MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() MERGE (librettist)-[:]-() '
-
-      } else if (Saint != '' && Diplomat != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) '
-        relsPerson = 'MERGE (saint)-[:]-() MERGE (diplomat)-[:]-() '
+      } else if (Saint != '' && Librettist != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
+        relsPerson = 'MERGE (ideal_opera)-[:CELEBRATES]-(saint) MERGE (librettist)-[:WROTE_TEXT]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(saint) MERGE (origin)-[:ORIGIN]-(librettist) '
 
       } else if (Saint != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (saint:Saint {Name:"'+Saint+'"}) '
-        relsPerson = 'MERGE (saint)-[:]-() '
+        relsPerson = 'MERGE (ideal_opera)-[:CELEBRATES]-(saint) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(saint) '
 
-      } else if (Diplomat != '' && Librettist != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
-        relsPerson = 'MERGE (diplomat)-[:]-() MERGE (librettist)-[:]-() '
-
-      } else if (Diplomat != '') {
-        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (diplomat:Diplomat {Name:"'+Diplomat+'"}) '
-        relsPerson = 'MERGE (diplomat)-[:]-() '
 
       } else if (Librettist != '') {
         queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (librettist:Librettist {Name:"'+Librettist+'"}) '
-        relsPerson =  'MERGE (librettist)-[:]-() '
+        relsPerson =  'MERGE (librettist)-[:WROTE_TEXT]-(ideal_opera) '
+        originPerson = 'MERGE (origin)-[:ORIGIN]-(librettist) '
 
       } else {
         queryPerson = ''
         relsPerson = ''
+        originPerson = ''
       }
 
-    } else { queryPerson = ''
-    relsPerson = ''
+    } else {
+      queryPerson = ''
+      relsPerson = ''
+      originPerson = ''
   }
-
 
 
       //Publications
       if (Publication_2 != '') {
-        queryJournal = 'MERGE (journal:Journal {Journal:"'+Journal+'", Continuation:"'+Publication_1+', '+Publication_2+'", Translated:"'+Translated+'"}) '
-        relsPublication = 'MERGE (journal)-[:]-() '
+        queryJournal = 'MERGE (journal:Journal {Title:"'+Journal+'"}) '
+        relsPublication = 'MERGE (journal)-[:CONTAINS]-(review) '
+        originJournal = 'MERGE (journal)-[:ORIGIN]-(origin) '
       } else {
-        queryJournal = 'MERGE (journal:Journal {Journal:"'+Journal+'", Continuation:"'+Publication_1+'", Translated:"'+Translated+'"}) '
-        relsPublication = 'MERGE (journal)-[:]-() '
+        queryJournal = 'MERGE (journal:Journal {Title:"'+Journal+'"}) '
+        relsPublication = 'MERGE (journal)-[:CONTAINS]-(review) '
+        originJournal = 'MERGE (journal)-[:ORIGIN]-(origin) '
       }
 
       //Ideal Opera
       if (Ideal_Opera != '') {
-        queryOpera = 'MERGE (ideal_opera:Ideal_Opera {Ideal_Opera:"'+Ideal_Opera+'"}) '
-        relsOpera = 'MERGE (ideal_opera)-[:]-() '
+        queryOpera = 'MERGE (ideal_opera:Ideal_Opera {Title:"'+Ideal_Opera+'"}) '
+        originOpera = 'MERGE (origin)-[:ORIGIN]-(ideal_opera) '
+        
       } else {
         queryOpera = ''
-        relsOpera = ''
+        originOpera = ''
       }
 
-      //Country
-      if (Country != '' && City != '' && Theatre != '') {
-        queryPlace = 'MERGE (place:Place {Country: "'+Country+'", City: "'+City+'", Theater:"'+Theatre+'"}) '
-        relsPlace = 'MERGE (place)-[:]-() '
-
-      } else if (Country != '' && City != '') {
-        queryPlace = 'MERGE (place:Place {Country: "'+Country+'", City: "'+City+'"}) '
-        relsPlace = 'MERGE (place)-[:]-() '
-
-      } else if (Country != '' && Theatre != '') {
-        queryPlace = 'MERGE (place:Place {Country: "'+Country+'", Theater:"'+Theatre+'"}) '
-        relsPlace = 'MERGE (place)-[:]-() '
-
-      } else if (Country != '') {
-        queryPlace = 'MERGE (place:Place {Country: "'+Country+'"}) '
-        relsPlace = 'MERGE (place)-[:]-() '
-
-      } else if (City != '' && Theatre != '') {
-        queryPlace = 'MERGE (place:Place {City: "'+City+'", Theater:"'+Theatre+'"}) '
-        relsPlace = 'MERGE (place)-[:]-() '
-
-      } else if (City != '') {
+      //Place
+      if (City != '') {
         queryPlace = 'MERGE (place:Place {City: "'+City+'"}) '
-        relsPlace = 'MERGE (place)-[:]-() '
+        relsPlace = 'MERGE (ideal_opera)-[:PERFORMED_IN]-(place) MERGE (origin)-[:ORIGIN]-(place) '
 
       } else if (Theatre != '') {
         queryPlace = 'MERGE (place:Place {Theater:"'+Theatre+'"}) '
-        relsPlace = 'MERGE (place)-[:]-() '
+        relsPlace = 'MERGE (ideal_opera)-[:PERFORMED_IN]-(place) MERGE (origin)-[:ORIGIN]-(place) '
+
+      } else if (Country != '') {
+        queryPlace = 'MERGE (place:Place {Country: "'+Country+'"}) '
+        relsPlace = 'MERGE (ideal_opera)-[:PERFORMED_IN]-(place) MERGE (origin)-[:ORIGIN]-(place) '
 
       } else {
         queryPlace = ''
@@ -452,18 +462,31 @@ csvtojson()
 
       //Review
       if (Review != '') {
-        queryReview = 'MERGE (review:Review {Review:"'+Review+'", Year:"'+Year+'"}) '
-        relsReview = 'MERGE (review)-[:REVIEWS]-() '
+        if (Publication_2 != '') {
+          queryReview = 'MERGE (review:Review {Review:"'+Review+'", Year:"'+Year+'", Continuation:"'+Publication_1+', '+Publication_2+'", Translated:"'+Translated+'"}) '  
+          relsReview = 'MERGE (review)-[:REVIEWS]-(ideal_opera) MERGE (origin)-[:ORIGIN]-(review) '
+
+        } else {
+          queryReview = 'MERGE (review:Review {Review:"'+Review+'", Year:"'+Year+'", Continuation:"'+Publication_1+'", Translated:"'+Translated+'"}) '
+          relsReview = 'MERGE (review)-[:REVIEWS]-(ideal_opera) MERGE (origin)-[:ORIGIN]-(review) '
+        }
+
       } else {
         queryReview = ''
         relsReview = ''
-      }
-      
-      queryRels = relsReview + relsPlace + relsPerson + relsPublication + relsOpera
 
-      query = queryJournal + queryReview + queryOpera + queryPerson + queryPlace + queryRels
+      }
+
+      let originCredentials = 'MERGE (origin:Origin {user:"'+dbuser+'", password:"'+dbpass+'"}) '
+      
+      
+      queryRels = relsReview + relsPlace + relsPerson + relsPublication + originPerson + originOpera + originJournal
+
+      query = queryJournal + queryReview + queryOpera + queryPerson + queryPlace + originCredentials + originOrigin + queryRels
+
 
       // console.log(query)
+      console.log('===============================')
       session
       .run(query)
       .then(function (result) {
@@ -481,6 +504,9 @@ csvtojson()
     console.log(airtableArr.length+' airtable rows to process')
 
     for (let i = 0; i < airtableArr.length; i++) {
+
+      dbuser = 'Austin'
+      dbpass = md5('austin')
       
       //Opera
       let Ideal_Opera = airtableArr[i][2]
@@ -506,26 +532,93 @@ csvtojson()
       let Secondary_Source_Page = airtableArr[i][15]
 
       //Query Pieces
-      let queryOpera = 'MERGE (ideal_opera:Ideal_Opera {Title:"'+Ideal_Opera+'", Genre:"'+Genre+'"}) '
-      let queryPerf = 'MERGE (opera_perf:Opera_Performance {Title: "'+Ideal_Opera+'", Alternate_Title: "'+Alternate_Title+'", Date: "'+Performance_Date+'", Language: "'+Performance_Language+'"}) '
+      let queryOpera
       let queryJournal
       let querySecondSource
-      let queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) MERGE (b:Person {Name:"'+Composer+'"}) '
-      let queryComposer = 'MERGE (composer:Composer {Name:"'+Composer+'"}) '
-      let queryTroupe = 'MERGE (troupe:Troupe {Name: "'+Troupe+'"}) '
-      let queryPlace = 'MERGE (place:Place {City: "'+Place+'", Latitude:"'+Latitude+'", Longitude:"'+Longitude+'"}) '
-      let queryRels = 'MERGE (composer)-[:Wrote]->(ideal_opera) MERGE (opera_perf)-[:Performed_In]->(place) MERGE (opera_perf)-[:Performed_By]->(troupe) MERGE (journal)-[:References]->(opera_perf) MERGE (opera_perf)-[:Performance_Of]-(ideal_opera)'
+      let queryPerf
+      let queryPerson
+      let queryComposer
+      let queryPlace
 
-      if (Theatre_Journal != '') {
-        queryJournal = 'MERGE (journal:Journal {Title: "'+Theatre_Journal+'", Page: "'+Theatre_Page+'"}) '
+      let relsPerson
+      let relsOpera
+      let relsPlace
+      let relsPerf
+      let relsTroupe
+      let relsJournal
+
+      let queryRels
+
+      let Origin = 'MERGE (origin:Origin {user:"'+dbuser+'", password:"'+dbpass+'"})'
+
+
+      if (Ideal_Opera != '' && Genre != '') {
+        queryOpera = 'MERGE (ideal_opera:Ideal_Opera {Title:"'+Ideal_Opera+'", Genre:"'+Genre+'"}) '
+        relsOpera = 'MERGE (origin)-[:ORIGIN]-(ideal_opera) '
+      } else if (Ideal_Opera != '') {
+        queryOpera = 'MERGE (ideal_opera:Ideal_Opera {Title:"'+Ideal_Opera+'"}) '
+        relsOpera = 'MERGE (origin)-[:ORIGIN]-(ideal_opera) '
       } else {
-        queryJournal = 'MERGE (journal:Secondary_Source {Title:"'+Secondary_Source+'", Page:"'+Secondary_Source_Page+'"}) '
+        queryOpera = ''
+        relsOpera = ''
       }
 
 
-      //everyone has a person label, and then different labels for their 'types'(librettist, composer, reviewer, etc.)
-      query = queryOpera + queryPerf + queryJournal + queryPerson + queryComposer + queryTroupe + queryPlace + queryRels
-      
+      if (Person != '') {
+        queryPerson = 'MERGE (person:Person {Name:"'+Person+'"}) '
+        queryComposer = 'MERGE (composer:Composer {Name:"'+Composer+'"}) '
+        relsPerson = 'MERGE (composer)-[:WROTE]-(ideal_opera) MERGE (person)-[:WROTE]-(ideal_opera) MERGE (origin)-[:ORIGIN]-(composer) MERGE (origin)-[:ORIGIN]-(person) '
+      } else {
+        queryPerson = ''
+        queryComposer = ''
+        relsPerson = ''
+      }
+
+
+      if (Place != '') {
+        queryPlace = 'MERGE (place:Place {City: "'+Place+'", Latitude:"'+Latitude+'", Longitude:"'+Longitude+'"}) '
+        relsPlace = 'MERGE (opera_perf)-[:PERFORMED_IN]-(place) MERGE (origin)-[:ORIGIN]-(place) '
+      } else {
+        queryPlace = ''
+        relsPlace = ''
+      }
+
+
+      if (Troupe != '') {
+        queryTroupe = 'MERGE (troupe:Troupe {Name: "'+Troupe+'"}) '
+        relsTroupe = 'MERGE (troupe)-[:PERFORMED]-(opera_perf) MERGE (origin)-[:ORIGIN]-(troupe) '
+
+      } else {
+        queryTroupe = ''
+        relsTroupe = ''
+      }
+
+
+      if (Performance_Date != '') {
+        queryPerf = 'MERGE (opera_perf:Opera_Performance {Title: "'+Ideal_Opera+'", Alternate_Title: "'+Alternate_Title+'", Date: "'+Performance_Date+'", Language: "'+Performance_Language+'"}) '
+        relsPerf = 'MERGE (opera_perf)-[:PERFORMANCE_OF]-(ideal_opera) MERGE (origin)-[:ORIGIN]-(opera_perf) '
+      } else {
+        queryPerf = ''
+        relsPerf = ''
+      }
+
+
+      if (Theatre_Journal != '') {
+        queryJournal = 'MERGE (journal:Journal {Title: "'+Theatre_Journal+'", Page: "'+Theatre_Page+'"}) '
+        relsJournal = 'MERGE (journal)-[:REFERENCES]-(opera_perf) MERGE (journal)-[:ORIGIN]-(origin) '
+      } else if (Secondary_Source != '') {
+        queryJournal = 'MERGE (journal:Secondary_Source {Title:"'+Secondary_Source+'", Page:"'+Secondary_Source_Page+'"}) '
+        relsJournal = 'MERGE (journal)-[:REFERENCES]-(opera_perf) MERGE (journal)-[:ORIGIN]-(origin) '
+      }  else {
+        queryJournal = ''
+        relsJournal = ''
+      }
+
+
+      queryRels = relsPerson + relsPlace + relsTroupe + relsJournal + relsPerf + relsOpera 
+
+      query = queryOpera + queryPerf + queryJournal + queryPerson + queryComposer + queryTroupe + queryPlace + Origin + queryRels
+
       session
       .run(query)
       .then(function (result) {

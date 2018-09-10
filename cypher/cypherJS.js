@@ -1,7 +1,12 @@
-var neo4j = require('neo4j-driver').v1;
-var driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "james"));
-// var driver = neo4j.driver("bolt://hobby-kapooclnoaicgbkepnkkcnbl.dbs.graphenedb.com:24786", neo4j.auth.basic("james", "b.7Vv42A3Qt3Z8.fgeqtr3c9iEk2R15"))
-var session = driver.session();
+const dotenv = require('dotenv').config()
+
+let connection = process.env.BOLT_CONNECTION
+let connection_user = process.env.BOLT_USER
+let connection_password = process.env.BOLT_PASSWORD
+
+const neo4j = require('neo4j-driver').v1
+const driver = neo4j.driver(connection, neo4j.auth.basic(connection_user, connection_password));
+const session = driver.session();
 
 let query = 'match (n)-[r]-(m)  return n,r'
 

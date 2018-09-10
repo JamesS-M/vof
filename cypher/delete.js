@@ -1,7 +1,12 @@
-var neo4j = require('neo4j-driver').v1;
-var driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", "james"));
+const dotenv = require('dotenv').config()
 
-var session = driver.session()
+let connection = process.env.BOLT_CONNECTION
+let connection_user = process.env.BOLT_USER
+let connection_password = process.env.BOLT_PASSWORD
+
+const neo4j = require('neo4j-driver').v1
+const driver = neo4j.driver(connection, neo4j.auth.basic(connection_user, connection_password));
+const session = driver.session();
 
 session
 .run('Match (n) detach delete n')
