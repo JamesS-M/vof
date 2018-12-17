@@ -18,5 +18,5 @@ csvtojson()
 .fromFile(csv)
 .on('json', (jsonObj, rowIndex) => {
   let dirtyDates = jsonObj['14 October 1795']
-  console.log(redoDate(dirtyDates))
+  (redoDate(dirtyDates))
 })

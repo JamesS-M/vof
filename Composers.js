@@ -4,20 +4,19 @@ loads it as an array of JSON objects, applies modifications, and
 saves a new csv.
 */
 
-const csvFilePath='/Users/James/Documents/CS/OperaticFame/Folder/Input/csv/Composers.csv'
+const csvFilePath = '/Users/James/Documents/CS/OperaticFame/Folder/Input/csv/Composers.csv'
 const csvOutputFilePath = '/Users/James/Documents/CS/Folder/Output/Composers.csv'
 
-const csvtojson=require('csvtojson/v1')
+const csvtojson = require('csvtojson/v1')
 const fs = require('fs')
-const Json2csvParser=require('json2csv').Parser;
+const Json2csvParser = require('json2csv').Parser
 
-let composersArray=[]
+let composersArray = []
 
 // Creates json object from csv file
 csvtojson()
-.fromFile(csvFilePath)
-.on('json', (jsonObj, rowIndex)=> {
-    
+  .fromFile(csvFilePath)
+  .on('json', (jsonObj, rowIndex) => {
     // Removes unused columns
     // delete jsonObj['Calendar Items']
     // delete jsonObj['Attachments']
@@ -25,21 +24,19 @@ csvtojson()
     // delete jsonObj['composer']
     // Pushes jsonObj into composersArray
     composersArray.push(jsonObj['Name'])
-    console.log(jsonObj['Name'])
-
-})
-.on('done',(error)=>{
-    // Creates new object from Json2csvParser    
+  })
+  .on('done', () => {
+    // Creates new object from Json2csvParser
     // const fields = ['Name'];
     // const json2csvParser = new Json2csvParser({ fields });
 
     // // Writes csvFile to console
     // const csvFile = json2csvParser.parse(composersArray);
-    // console.log(csvFile)
-    
+    // (csvFile)
+
     // Creates Composers.csv with data from csvFile
     // fs.writeFile(csvOutputFilePath, csvFile, function(err) {
     //     if (err) throw err;
-    //     console.log('file saved');
+    //     ('file saved');
     // })
-})
+  })

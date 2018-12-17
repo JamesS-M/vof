@@ -15,6 +15,6 @@ function extractName(manynames) {
 
 
 
-console.log(extractName("<James> <Paul> <Estelle>"))
-console.log(extractName("<one> <two three> <four>"))
+(extractName("<James> <Paul> <Estelle>"))
+(extractName("<one> <two three> <four>"))
 // => ["one","two three", "four"]

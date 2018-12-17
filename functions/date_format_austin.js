@@ -18,6 +18,6 @@ let airtableArr = [];
 csvtojson()
 .fromFile(csvAirtable)
 .on('csv', (csvRow) => {
-  console.log(formatDate(csvRow[7]))
+  (formatDate(csvRow[7]))
   
 })

@@ -7,4 +7,4 @@ function extractDetails(details) {
   return details.replace(/(\(\d\d\d\d\)\, )/, '')
 }
 
-console.log(extractDetails(str3))
+(extractDetails(str3))

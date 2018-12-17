@@ -21,10 +21,10 @@ let canonIt = (name) => {
 let canonItCase = (name) => {
 	switch(name) {
 	case '':
-	console.log('Empty input' + '"' + name + '"')
+	('Empty input' + '"' + name + '"')
 	break;
 	case ' ':
-	console.log('Empty input:' + '"' + name + '"')
+	('Empty input:' + '"' + name + '"')
 	default:
 	for (let i = 0; i < map.length; i++) {
       if (map[i].includes(name)) {
@@ -46,5 +46,5 @@ csvtojson()
 
 //After map array has been populated, we can search for a canonical name
 .on('done', () => {
-console.log(canonItCase(nameSearch))
+(canonItCase(nameSearch))
 })

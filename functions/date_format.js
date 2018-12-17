@@ -13,4 +13,4 @@ function formatDate(date) {
     return [year, month, day].join('-');
 }
 
-console.log(formatDate(str2))
+(formatDate(str2))

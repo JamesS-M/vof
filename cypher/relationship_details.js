@@ -24,10 +24,10 @@ let propertyMap = {};
 
 
 let arr = [{name: 'James', count: 15}, {name: 'Paul', count: 10}, {name: 'Estelle', count: 20}]
-// console.log(arr.find(function(n) {
+// (arr.find(function(n) {
 //   return n.count > 12
 // }))
-console.log(arr.sort(function(a,b){
+(arr.sort(function(a,b){
   return b.count - a.count
 }))
 
@@ -97,7 +97,6 @@ session
 
 
       for (let k in m.properties) {
-        debugg
         
         let currentProperty = currentLabel.connections.find(function (prop) {
           return prop.name == m.properties[k]
@@ -166,13 +165,13 @@ session
       relationshipMap[r[k]]++
     }
   }
-  console.log(countMap.labelConnections.sort(function(a,b){return a.count - b.count}))
+  (countMap.labelConnections.sort(function(a,b){return a.count - b.count}))
   debugger
   
 })
 
 .then(function (result) {
-  console.log(countMap)
+  (countMap)
   let object
   let dates = {}
   let propertyCount = {}
@@ -192,14 +191,14 @@ session
     }
   }
 
-  console.log('==========================================')
-  console.log(object)
-  console.log('==========================================')
+  ('==========================================')
+  (object)
+  ('==========================================')
 
   // Returns query time and calculation time
   t3 = new Date
-  console.log(`Query time: ${t2-t}`)
-  console.log(`Calculation time: ${t3-t2}`)
+  (`Query time: ${t2-t}`)
+  (`Calculation time: ${t3-t2}`)
 })
 
   

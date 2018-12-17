@@ -14,7 +14,7 @@ function extractOpera(opera) {
   if(opera.charAt(0) === '<') {
     let pattern = /<.*?: (.*?)( \(\d\d\d\d\))?>/g;
     while(matches = pattern.exec(opera)) {
-      // console.log(matches)
+      // (matches)
       cleanOperas.push(matches[1]);
     
     } 
@@ -25,4 +25,4 @@ function extractOpera(opera) {
 }
 
 
-console.log(extractOpera(str3))
+(extractOpera(str3))
