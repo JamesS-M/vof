@@ -97,9 +97,9 @@ function formatDate(date) {
 
 //Exports info from Airtable into neo4j. Creates nodes and relationships
 function neo4jAirtableExport(airtableArr) {
-  // console.log("starting airtable export")
+  // ("starting airtable export")
   let query;
-  // console.log(airtableArr)
+  // (airtableArr)
   for (let i = 0; i < airtableArr.length; i++) {
     if (airtableArr[i]['Theater_Journal'] == '') {
       if (airtableArr[i]['Genre'] == 'French Opera') {
@@ -116,7 +116,7 @@ function neo4jAirtableExport(airtableArr) {
     session
     .run(query)
     .then(function (result) {
-      // console.log('Airtable finished processing row ' + i);
+      // ('Airtable finished processing row ' + i);
     })
   }
 return;
@@ -134,7 +134,7 @@ function neo4jLüttekenExport(lüttekenArr) {
     session
     .run(query)
     .then(function (result) {
-      // console.log('Lütteken finished processing row ' + i) ;
+      // ('Lütteken finished processing row ' + i) ;
     })
   }
 
@@ -214,7 +214,7 @@ csvtojson()
 .fromFile(csvMap)
 .on('json',(csvRow) => {
   map.push(csvRow);
-  // console.log('mapping loaded')
+  // ('mapping loaded')
 })
 
 //An array which determines which Lütteken row to select
@@ -252,7 +252,7 @@ csvtojson()
 
 //After Lütteken is loaded and manipulated, exports to neo4j
 .on('done',() => {
-  // console.log('Finished loading Lütteken. Starting export to NEO4J.');
+  // ('Finished loading Lütteken. Starting export to NEO4J.');
   neo4jLüttekenExport(lüttekenArr); //828 rows 
 })
 
@@ -264,14 +264,14 @@ csvtojson()
 .fromFile(csvAirtable)
 .on('json',(csvRow) => {
   airtableArr.push(csvRow);
-  // console.log(csvRow[0])
-  // console.log(airtableArr)
+  // (csvRow[0])
+  // (airtableArr)
   
 })
 
 //After Airtable is loaded, export to neo4j
 .on('done',() => {   
-  // console.log('Finished loading Airtable. Starting export to NEO4J');
-  // console.log(airtableArr)
+  // ('Finished loading Airtable. Starting export to NEO4J');
+  // (airtableArr)
   neo4jAirtableExport(airtableArr); //9126 rows  
 })

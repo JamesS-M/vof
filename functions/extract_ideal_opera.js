@@ -12,4 +12,4 @@ let extractIdealOpera = (opera) => {
   }
 }
 
-console.log(extractIdealOpera(str3))
+(extractIdealOpera(str3))
