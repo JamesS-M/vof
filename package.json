@@ -1,0 +1,26 @@
+{
+  "name": "vof",
+  "version": "1.0.0",
+  "description": "",
+  "main": "export.js",
+  "dependencies": {
+    "csvtojson": "^2.0.8",
+    "dotenv": "^6.0.0",
+    "md5": "^2.2.1",
+    "neo4j-driver": "^1.6.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JamesS-M/VOF.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JamesS-M/VOF/issues"
+  },
+  "homepage": "https://github.com/JamesS-M/VOF#readme"
+}
