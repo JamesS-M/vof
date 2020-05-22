@@ -5,9 +5,10 @@ const bolt = process.env.BOLT_CONNECTION
 const user = process.env.BOLT_USER
 const pass = process.env.BOLT_PASSWORD
 
-const neo4j = require('neo4j-driver').v1
+const neo4j = require('neo4j-driver')
 const driver = neo4j.driver(bolt, neo4j.auth.basic(user, pass))
-const session = driver.session()
+const runProcess = process.argv[process.argv.length - 1]
+const iteration = 0
 
 // Files
 const csvLütteken = '../data/lutteken_reviews.csv'
@@ -17,25 +18,37 @@ const csvJournalInfo = '../data/journal_info.csv'
 const csvNameMap = '../data/name_map.csv'
 const csvKeywords = '../data/keywords.csv'
 
-const { extract_name, extract_review, extract_ideal_opera, extract_opera, canon_map, format_date, name_reorder, flatten, extract_theatre } = require('./functions/functions.js')
 const handleLutteken = require('./data-handlers/lutteken-export.js')
 const handleAirtable = require('./data-handlers/airtable-export.js')
-const query = require('./query.js')
+
+const query = async (q) => await driver.session(neo4j.session.WRITE).run(q)
 
 !(async function () {
   const nameMap = await csvtojson().fromFile(csvNameMap)
   const keywords = await csvtojson().fromFile(csvKeywords)
   const journalInfo = await csvtojson().fromFile(csvJournalInfo)
 
-  !(async function () {
-    query(handleLutteken(await csvtojson().fromFile(csvLütteken), nameMap, journalInfo, keywords), session)
-  })()
+  const getLuttekenData = async () => handleLutteken(await csvtojson().fromFile(csvLütteken), nameMap, journalInfo, keywords, iteration).forEach(async q => await query(q))
+
+  const getAirtableData = async () => handleAirtable(await csvtojson().fromFile(csvAirtable), nameMap, journalInfo, iteration).forEach(async q => await query(q))
+
 
   !(async function () {
-    query(handleAirtable(await csvtojson().fromFile(csvAirtable), nameMap, journalInfo), session)
-  })
+    switch (runProcess) {
+      case 'l': {
+        return getLuttekenData()
+      }
+      case 'a': {
+        return getAirtableData()
+      }
+      default: {
+        return getLuttekenData() && getAirtableData()
+      }
+    }
+  })()
 })()
 
+/*
 // const nameMap = []
 
 // Loads nameMapping.csv and pushes each row to a subarray
@@ -553,3 +566,4 @@ function neo4jAirtableExport(airtableArr) {
   }
   return
 }
+*/

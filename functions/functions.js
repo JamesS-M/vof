@@ -14,6 +14,10 @@ module.exports = {
     return cleanNames
   },
 
+  remove_quotes: function (string) {
+    return string.replace(/\"/g, '')
+  },
+
   extract_opera: function (opera) {
     let cleanOperas = []
     if (opera.charAt(0) === '<') {
@@ -36,6 +40,16 @@ module.exports = {
       }
     } else {
       return name
+    }
+  },
+
+  split_date: function (date) {
+    let [year, month, day] = date.split('-')
+    year = parseInt(year)
+    month = parseInt(month)
+    day = parseInt(day)
+    return {
+      year, month, day
     }
   },
 
@@ -128,6 +142,16 @@ module.exports = {
     } else {
       return name
     }
+  },
+
+  chunk_array(myArray, chunk_size) {
+    var results = []
+
+    while (myArray.length) {
+      results.push(myArray.splice(0, chunk_size))
+    }
+
+    return results
   }
 }
 

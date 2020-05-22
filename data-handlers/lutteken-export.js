@@ -1,3 +1,4 @@
+const step = 1000
 const {
   extract_review,
   extract_ideal_opera,
@@ -8,24 +9,23 @@ const {
   normalize_name
 } = require('../functions/functions.js')
 
-module.exports = function handleLutteken(data, nameMap, journalInfo, keywords) {
-  data = data.slice(0, 10)
+module.exports = function handleLutteken(data, nameMap, journalInfo, keywords, iteration) {
+  data = data.slice((iteration * step), ((iteration + 1) * step))
   console.log(`${data.length} lutteken rows to process...`)
-  return data.reduce((str, row) => {
-    // console.log(Object.keys(row))
-
-    let {
-      ReviewTitle: review,
-      JournalShortTitle: journal,
-      EntryDetails: publication1,
-      Continuation: publication2,
-      Year: year,
-      Translated: translated,
-      IdealOpera: idealOpera,
-      Person: person,
-      Place: place,
-      Theatre: theatre,
-    } = row, query
+  return data.map(({
+    ReviewTitle: review,
+    JournalShortTitle: journal,
+    EntryDetails: publication1,
+    Continuation: publication2,
+    Year: year,
+    Translated: translated,
+    IdealOpera: idealOpera,
+    Person: person,
+    Critic: critic,
+    Composer: composer,
+    Place: place,
+    Theatre: theatre
+  }) => {
 
     // data massaging
     review = extract_review(review)
@@ -41,16 +41,24 @@ module.exports = function handleLutteken(data, nameMap, journalInfo, keywords) {
       makeReview(review, publication1, publication2, journal, translated, year),
       makePerson(person),
       makeIdealOpera(idealOpera),
-      makePlace(place, theatre)
+      makePlace(place, theatre),
+      makeCritic(critic),
+      makeComposer(composer)
     ]
+    let relationshipQuery = [
+    ]
+    let query = ` ${nodeQuery.join(' ')} ${relationshipQuery.join(' ')}`
 
-    let relationshipQuery = []
+    return query
+  })
+}
 
     return str += ` ${nodeQuery.join(' ')} ${relationshipQuery.join(' ')}`
   }, '')
 }
 
-function makePlace(place, theatre) {
+const makePlace = (place, theatre) => {
+  if (!place) return ``
   return `MERGE (place:Place {${
     [
       place ? `City: "${place}"` : false,
@@ -58,7 +66,8 @@ function makePlace(place, theatre) {
     ].filter(Boolean).join(', ')
     }})`
 }
-function makeReview(review, publication1, publication2, journal, translated, year) {
+
+const makeReview = (review, publication1, publication2, journal, translated, year, critic) => {
   if (!review) return ``
   return `MERGE (review:Review {${
     [
@@ -66,15 +75,27 @@ function makeReview(review, publication1, publication2, journal, translated, yea
       (publication1 || publication2) ? `Continuation: "${publication1 || ''} ${publication1 ? ', ' : ''}${publication2 || ''}"` : false,
       journal ? `Journal: "${typeof (journal) === 'string' ? journal : journal.Journal}"` : false,
       year ? `Year: date({year:${year}})` : false,
-      translated ? `Translated: "${translated}"` : false
-    ]
-      .filter(Boolean).join(', ')})}`
+      translated ? `Translated: "${translated}"` : false,
+      critic ? `Critic: "${critic}"` : false
+    ].filter(Boolean).join(', ')}})`
 }
-function makePerson(person) {
+
+const makeCritic = (critic) => {
+  if (!critic) return ``
+  return `MERGE (critic:Critic {Name: "${critic}"})`
+}
+
+const makeComposer = (composer) => {
+  if (!composer) return ``
+  return `MERGE (composer:Composer {Name: "${composer}"})`
+}
+
+const makePerson = (person) => {
   if (!person) return ``
-  return `MERGE (person:Person {Name:"${person}"})`
+  return `MERGE (person:Person {Name: "${person}"})`
 }
-function makeJournal(journal) {
+
+const makeJournal = (journal) => {
   if (!journal) return ``
   let query = `MERGE (journal:Journal {Title:"`
   if (typeof (journal) === 'string') {
@@ -82,9 +103,15 @@ function makeJournal(journal) {
   }
   let { Journal, Publisher, Editor, Dates } = journal
 
-  return query += `${Journal}", Publisher:"${Publisher}", "Editor:"${Editor}", Dates:"${Dates}"})`
+  return query += `${Journal}", Publisher:"${Publisher}", Editor:"${Editor}", Dates:"${Dates}"})`
 }
-function makeIdealOpera(idealOpera) {
+
+const makeIdealOpera = (idealOpera, composer) => {
   if (!idealOpera) return ``
-  return `MERGE (ideal_opera:Ideal_Opera {Title:"${idealOpera}"})`
+  return `MERGE (idealOpera:Ideal_Opera {${
+    [
+      idealOpera ? `Title:"${idealOpera}"` : false,
+      composer ? `Composer:${composer}` : false
+    ].filter(Boolean).join(', ')
+    }})`
 }
