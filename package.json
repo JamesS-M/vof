@@ -4,10 +4,10 @@
   "description": "",
   "main": "export.js",
   "dependencies": {
-    "csvtojson": "^2.0.8",
-    "dotenv": "^7.0.0",
+    "csvtojson": "^2.0.10",
+    "dotenv": "^8.2.0",
     "md5": "^2.2.1",
-    "neo4j-driver": "^1.6.3"
+    "neo4j-driver": "^4.0.2"
   },
   "devDependencies": {},
   "scripts": {
