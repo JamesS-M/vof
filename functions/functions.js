@@ -1,126 +1,146 @@
-
 module.exports = {
-
   extract_name: function (manyNames) {
-    let cleanNames = [];
+    let cleanNames = []
 
     if (manyNames.charAt(0) === '<') {
-      let pattern = /<(.*?)>/g;
-      while(matches = pattern.exec(manyNames)) {
-        cleanNames.push(matches[1]);
+      let pattern = /<(.*?)>/g
+      while (matches = pattern.exec(manyNames)) {
+        cleanNames.push(matches[1])
       }
-    } else if (manyNames.charAt(0) === ''){
+    } else if (manyNames.charAt(0) === '') {
     } else {
-      cleanNames.push(manyNames);
+      cleanNames.push(manyNames)
     }
-    return cleanNames;
+    return cleanNames
   },
 
   extract_opera: function (opera) {
-    let cleanOperas = [];
-    if(opera.charAt(0) === '<') {
-      let pattern = /<.*?: (.*?)( \(\d\d\d\d\))?>/g;
-      while(matches = pattern.exec(opera)) {
-        cleanOperas.push(matches[1]);
-      } 
+    let cleanOperas = []
+    if (opera.charAt(0) === '<') {
+      let pattern = /<.*?: (.*?)( \(\d\d\d\d\))?>/g
+      while (matches = pattern.exec(opera)) {
+        cleanOperas.push(matches[1])
+      }
     } else {
-      cleanOperas.push(opera);
+      cleanOperas.push(opera)
     }
-    return cleanOperas;
+    return cleanOperas
   },
 
   canon_map: function (name, map) {
-    if (name != ''){
+    if (name != '') {
       for (let a = 0; a < map.length; a++) {
         if (map[a].includes(name)) {
-          return map[a][0];
+          return map[a][0]
         }
-      }  
+      }
     } else {
-      return name;
+      return name
     }
   },
 
   format_date: function (date) {
     var d = new Date(date),
-        month = '' + (d.getMonth() + 1),
-        day = '' + d.getDate(),
-        year = d.getFullYear();
+      month = '' + (d.getMonth() + 1),
+      day = '' + d.getDate(),
+      year = d.getFullYear()
 
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
+    if (month.length < 2) month = '0' + month
+    if (day.length < 2) day = '0' + day
 
-    return [year, month, day].join('-');
+    return [year, month, day].join('-')
   },
 
   name_reorder: function (name) {
-    let str = name.toString();
-    let regex = /,/;
+    let str = name.toString()
+    let regex = /,/
     if (regex.test(str)) {
-      let result = str.split(", ");
+      let result = str.split(", ")
       if (result[1]) {
-        return result[1].substr(0,result[1].length) + ' ' + result[0];
+        return result[1].substr(0, result[1].length) + ' ' + result[0]
       } else {
-        return result[0];
+        return result[0]
       }
     } else {
-      return str;
+      return str
     }
   },
 
   extract_review: function (review) {
-    let cleanReview = [];
     let pattern = /: \[?(.*?)\]?$/
     let match = pattern.exec(review)
-    return match[1]
+    return match ? match[1] : ''
   },
 
 
   extract_ideal_opera: function (opera) {
     if (opera.length == 0) {
-      return 
+      return
     }
-    let cleanOpera = [];
+    let cleanOpera = []
     let pattern = /: (.*?)[\.-\>]/
-    while(matches = pattern.exec(opera)) {
-      cleanOpera.push(matches[1]);
-      return cleanOpera.toString();
+    while (matches = pattern.exec(opera)) {
+      cleanOpera.push(matches[1])
+      return cleanOpera.toString()
     }
   },
 
-  flatten: function (a, shallow, r){
+  flatten: function (a, shallow, r) {
     if (!r) {
       r = []
     }
     if (shallow) {
-      return r.concat.apply(r,a);
+      return r.concat.apply(r, a)
     }
-    for (var i = 0; i < a.length; i++){
-        if (a[i].constructor == Array){
-            flatten(a[i],shallow,r);
-        } else {
-            r.push(a[i]);
-        }
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].constructor == Array) {
+        flatten(a[i], shallow, r)
+      } else {
+        r.push(a[i])
+      }
     }
-    return r;
+    return r
   },
 
   extract_theatre: function (manynames) {
-    let cleanNames = [];
+    let cleanNames = []
     if (manynames.charAt(0) === '<') {
-      let pattern = /<(.*?),/g;
-      while(matches = pattern.exec(manynames)) {
-        cleanNames.push(matches[1]);
+      let pattern = /<(.*?),/g
+      while (matches = pattern.exec(manynames)) {
+        cleanNames.push(matches[1])
       }
     } else {
       cleanNames.push(manynames)
     }
     return cleanNames.toString()
+  },
+
+  normalize_journal(journal, journalMap) {
+    return journalMap.find(nrmlJournal => {
+      return nrmlJournal['Journal'] === journal
+    }) || journal
+  },
+
+  normalize_name(name, nameMap) {
+    if (name != '') {
+      let found = nameMap.find(canon => Object.values(canon).includes(name))
+      return found ? found.Canonical : name
+    } else {
+      return name
+    }
   }
 }
 
 
 
 
+/*
+
+idealOpera:Ideal_Opera {Title}
+person:Person {Name}
+journal:Journal {Title, Publisher, Editor, Dates}
+place:Place {Theatre}
+review: Review {Title, Year, Continuation(pbl1, pbl2), Translated, Journal}
 
 
+*/
