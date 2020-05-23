@@ -34,7 +34,7 @@ module.exports = function handleAirtable(data, nameMap, journalInfo) {
     // assemble query
     let nodeQuery = [
       makePlace(place, longitude, latitude),
-      makeIdealOpera(opera, alternateTitle, genre),
+      makeIdealOpera(opera, alternateTitle, genre, composer),
       makePerson(composer),
       makeTroupe(troupe),
       makePerformance(opera, alternateTitle, performanceDate, place, troupe, performanceLanguage, longitude, latitude),
@@ -70,23 +70,23 @@ const textRelationship = (journal, secondarySource, performanceDate) => {
     ].filter(Boolean).join(' MERGE ')}`
 }
 
-const performanceRelationship = (opera, performanceDate, place, performanceLanguage, ) => {
+const performanceRelationship = (opera, performanceDate, place, performanceLanguage, troupe) => {
   if (!place && !performanceLanguage && !performanceDate.year) return ``
   return `MERGE ${
     [
-      (opera && !!performanceDate.year && !!performanceDate.month && !!performanceDate.day) ? `(idealOpera)-[:PERFORMED_ON]-(date)` : false,
+      (opera && !!performanceDate.year && !!performanceDate.month && !!performanceDate.day) ? `(operaPerformance)-[:PERFORMED_ON]-(date)` : false,
       (opera && place) ? `(operaPerformance)-[:PERFORMED_IN]-(place)` : false,
       (opera && performanceLanguage) ? `(idealOpera)-[:PERFORMED_IN_LANGUAGE]-(language)` : false,
       opera ? `(operaPerformance)-[:PERFORMANCE_OF]-(idealOpera)` : false
     ].filter(Boolean).join(' MERGE ')}`
 }
 
-const personalRelationship = (composer, opera, troupe) => {
+const personalRelationship = (composer, opera, performanceDate, troupe) => {
   if (!composer && !troupe) return ``
   return `MERGE ${
     [
       (opera && composer) ? `(person)-[:COMPOSED]-(idealOpera)` : false,
-      (opera && troupe) ? `(troupe)-[:PERFORMED]-(idealOpera)` : false
+      (!!performanceDate.year && troupe) ? `(troupe)-[:PERFORMED]-(operaPerformance)` : false
     ].filter(Boolean).join(' MERGE ')}`
 }
 
@@ -99,7 +99,7 @@ const makeSecondarySource = (secondarySource, secondarySourcePage) => {
     ].filter(Boolean).join(', ')
     }})`
 }
-const makeGenre = (genre) =>{
+const makeGenre = (genre) => {
   if (!genre) return ``
   return `MERGE (genre:Genre {Genre: "${genre}"})`
 }
@@ -158,12 +158,13 @@ const makePlace = (place, longitude, latitude) => {
     }})`
 }
 
-const makeIdealOpera = (opera, alternateTitle, genre) => {
+const makeIdealOpera = (opera, alternateTitle, genre, composer) => {
   return `MERGE (idealOpera:Ideal_Opera {${
     [
       opera ? `Title: "${opera}"` : false,
       alternateTitle ? `Alternate_Title: "${alternateTitle}"` : false,
-      genre ? `Genre: "${genre}"` : false
+      genre ? `Genre: "${genre}"` : false,
+      composer ? `Composer: "${composer}"` : false
     ].filter(Boolean).join(', ')
     }})`
 }
