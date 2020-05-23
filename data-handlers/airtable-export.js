@@ -45,7 +45,7 @@ module.exports = function handleAirtable(data, nameMap, journalInfo) {
       makeSecondarySource(secondarySource, secondarySourcePage)
     ]
     let relationshipQuery = [
-      personalRelationship(composer, opera, troupe),
+      personalRelationship(composer, opera, performanceDate, troupe),
       performanceRelationship(opera, performanceDate, place, troupe, performanceLanguage),
       textRelationship(theaterJournal, secondarySource, performanceDate),
       genreRelationship(opera, genre)
