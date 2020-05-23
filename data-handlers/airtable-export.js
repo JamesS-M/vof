@@ -65,11 +65,11 @@ const performanceRelationship = (opera, performanceDate, place, performanceLangu
 }
 
 const personalRelationship = (composer, opera, troupe) => {
-  if (!opera) return ``
+  if (!composer && !troupe) return ``
   return `MERGE ${
     [
-      composer ? `(composer)-[:COMPOSED]-(idealOpera)` : false,
-      troupe ? `(troupe)-[:PERFORMED]-(idealOpera)` : false
+      (opera && composer) ? `(composer)-[:COMPOSED]-(idealOpera)` : false,
+      (opera && troupe) ? `(troupe)-[:PERFORMED]-(idealOpera)` : false
     ].filter(Boolean).join(' MERGE ')}`
 }
 
