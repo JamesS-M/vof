@@ -45,7 +45,8 @@ module.exports = function handleAirtable(data, nameMap, journalInfo) {
     ]
     let relationshipQuery = [
       personalRelationship(composer, opera, troupe),
-      performanceRelationship(opera, performanceDate, place, troupe, performanceLanguage)
+      performanceRelationship(opera, performanceDate, place, troupe, performanceLanguage),
+      textRelationship(theaterJournal, secondarySource, performanceDate)
     ]
     let query = ` ${nodeQuery.join(' ')} ${relationshipQuery.join(' ')}`
 
@@ -53,22 +54,31 @@ module.exports = function handleAirtable(data, nameMap, journalInfo) {
   })
 }
 
-const performanceRelationship = (opera, performanceDate, place, performanceLanguage) => {
+const textRelationship = (journal, secondarySource, performanceDate) => {
+  if (!performanceDate) return ``
+  return `MERGE ${
+    [
+      journal ? `(journal)-[:REFERENCES]-(operaPerformance)` : false,
+      secondarySource ? `(secondarySource)-[:REFERENCES]-(operaPerformance)` : false
+    ].filter(Boolean).join(' MERGE ')}`
+}
+
+const performanceRelationship = (opera, performanceDate, place, performanceLanguage, ) => {
   if (!place && !performanceLanguage && !performanceDate.year) return ``
   return `MERGE ${
     [
       (opera && !!performanceDate.year && !!performanceDate.month && !!performanceDate.day) ? `(idealOpera)-[:PERFORMED_ON]-(date)` : false,
-      (opera && place) ? `(idealOpera)-[:PERFORMED_IN]-(place)` : false,
-      (opera && performanceLanguage) ? `(idealOpera)-[:PERFORMED_IN_LANGUAGE]-(language)` : false
-    ].filter(Boolean).join(' MERGE ')
-    }`
+      (opera && place) ? `(operaPerformance)-[:PERFORMED_IN]-(place)` : false,
+      (opera && performanceLanguage) ? `(idealOpera)-[:PERFORMED_IN_LANGUAGE]-(language)` : false,
+      opera ? `(operaPerformance)-[:PERFORMANCE_OF]-(idealOpera)` : false
+    ].filter(Boolean).join(' MERGE ')}`
 }
 
 const personalRelationship = (composer, opera, troupe) => {
   if (!composer && !troupe) return ``
   return `MERGE ${
     [
-      (opera && composer) ? `(composer)-[:COMPOSED]-(idealOpera)` : false,
+      (opera && composer) ? `(person)-[:COMPOSED]-(idealOpera)` : false,
       (opera && troupe) ? `(troupe)-[:PERFORMED]-(idealOpera)` : false
     ].filter(Boolean).join(' MERGE ')}`
 }
