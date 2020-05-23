@@ -7,7 +7,10 @@ const pass = process.env.BOLT_PASSWORD
 const neo4j = require('neo4j-driver')
 const driver = neo4j.driver(bolt, neo4j.auth.basic(user, pass))
 
-const query = async (q) => await driver.session(neo4j.session.WRITE).run(q)
+const query = async (q) => {
+  let session = driver.session(neo4j.session.WRITE)
+  return await session.run(q).then(() => session.close())
+}
 
 module.exports = performQueries = async (queries) => {
   for (let i = 0; i < queries.length; i++) {
