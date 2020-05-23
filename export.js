@@ -1,37 +1,24 @@
-require('dotenv').config()
 const csvtojson = require('csvtojson')
-
-const bolt = process.env.BOLT_CONNECTION
-const user = process.env.BOLT_USER
-const pass = process.env.BOLT_PASSWORD
-
-const neo4j = require('neo4j-driver')
-const driver = neo4j.driver(bolt, neo4j.auth.basic(user, pass))
 const runProcess = process.argv[process.argv.length - 1]
-const iteration = 0
 
-// Files
 const csvLütteken = '../data/lutteken_reviews.csv'
 const csvAirtable = '../data/airtable.csv'
-
 const csvJournalInfo = '../data/journal_info.csv'
 const csvNameMap = '../data/name_map.csv'
 const csvKeywords = '../data/keywords.csv'
 
 const handleLutteken = require('./data-handlers/lutteken-export.js')
 const handleAirtable = require('./data-handlers/airtable-export.js')
-
-const query = async (q) => await driver.session(neo4j.session.WRITE).run(q)
+const performQueries = require('./query')
 
 !(async function () {
   const nameMap = await csvtojson().fromFile(csvNameMap)
   const keywords = await csvtojson().fromFile(csvKeywords)
   const journalInfo = await csvtojson().fromFile(csvJournalInfo)
 
-  const getLuttekenData = async () => handleLutteken(await csvtojson().fromFile(csvLütteken), nameMap, journalInfo, keywords, iteration).forEach(async q => await query(q))
+  const getLuttekenData = async () => performQueries(handleLutteken(await csvtojson().fromFile(csvLütteken), nameMap, journalInfo, keywords))
 
-  const getAirtableData = async () => handleAirtable(await csvtojson().fromFile(csvAirtable), nameMap, journalInfo, iteration).forEach(async q => await query(q))
-
+  const getAirtableData = async () => performQueries(handleAirtable(await csvtojson().fromFile(csvAirtable), nameMap, journalInfo))
 
   !(async function () {
     switch (runProcess) {
@@ -42,7 +29,8 @@ const query = async (q) => await driver.session(neo4j.session.WRITE).run(q)
         return getAirtableData()
       }
       default: {
-        return getLuttekenData() && getAirtableData()
+        return (
+          await getLuttekenData() && await getAirtableData())
       }
     }
   })()
