@@ -41,17 +41,24 @@ module.exports = function handleAirtable(data, nameMap, journalInfo) {
       makeJournal(theaterJournal, page),
       makeDate(performanceDate),
       makeLanguage(performanceLanguage),
+      makeGenre(genre),
       makeSecondarySource(secondarySource, secondarySourcePage)
     ]
     let relationshipQuery = [
       personalRelationship(composer, opera, troupe),
       performanceRelationship(opera, performanceDate, place, troupe, performanceLanguage),
-      textRelationship(theaterJournal, secondarySource, performanceDate)
+      textRelationship(theaterJournal, secondarySource, performanceDate),
+      genreRelationship(opera, genre)
     ]
     let query = ` ${nodeQuery.join(' ')} ${relationshipQuery.join(' ')}`
 
     return query
   })
+}
+
+const genreRelationship = (opera, genre) => {
+  if (!genre || !opera) return ``
+  return `MERGE (idealOpera)-[:HAS_GENRE_OF]-(genre)`
 }
 
 const textRelationship = (journal, secondarySource, performanceDate) => {
@@ -91,6 +98,10 @@ const makeSecondarySource = (secondarySource, secondarySourcePage) => {
       secondarySourcePage ? `Secondary_Source_Page: ${secondarySourcePage}` : false
     ].filter(Boolean).join(', ')
     }})`
+}
+const makeGenre = (genre) =>{
+  if (!genre) return ``
+  return `MERGE (genre:Genre {Genre: "${genre}"})`
 }
 
 const makeJournal = (journal, page) => {
