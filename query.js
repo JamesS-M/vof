@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const bolt = process.env.BOLT_CONNECTION
 const user = process.env.BOLT_USER
 const pass = process.env.BOLT_PASSWORD

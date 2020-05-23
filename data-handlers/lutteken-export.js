@@ -1,4 +1,3 @@
-const step = 1000
 const {
   extract_review,
   extract_ideal_opera,
@@ -6,11 +5,11 @@ const {
   name_reorder,
   extract_theatre,
   normalize_journal,
-  normalize_name
+  normalize_name,
+  validate_data
 } = require('../functions/functions.js')
 
-module.exports = function handleLutteken(data, nameMap, journalInfo, keywords, iteration) {
-  data = data.slice((iteration * step), ((iteration + 1) * step))
+module.exports = function handleLutteken(data, nameMap, journalInfo, keywords) {
   console.log(`${data.length} lutteken rows to process...`)
   return data.map(({
     ReviewTitle: review,
@@ -27,13 +26,19 @@ module.exports = function handleLutteken(data, nameMap, journalInfo, keywords, i
     Theatre: theatre
   }) => {
 
-    // data massaging
+    // data massage
     review = extract_review(review)
-    idealOpera = extract_ideal_opera(idealOpera)
-    person = normalize_name(name_reorder(extract_name(person)), nameMap)
-    theatre = extract_theatre(theatre)
-    journal = normalize_journal(journal, journalInfo)
-    place = extract_name(place).join(', ')
+    idealOpera = validate_data(extract_ideal_opera(idealOpera))
+    person = validate_data(normalize_name(name_reorder(extract_name(person)), nameMap))
+    theatre = validate_data(extract_theatre(theatre))
+    journal = validate_data(normalize_journal(journal, journalInfo))
+    place = validate_data(extract_name(place).join(', '))
+    publication1 = validate_data(publication1)
+    publication2 = validate_data(publication2)
+    year = validate_data(year)
+    translated = validate_data(translated)
+    critic = validate_data(critic)
+    composer = validate_data(composer)
 
     // assemble query
     let nodeQuery = [
@@ -46,6 +51,9 @@ module.exports = function handleLutteken(data, nameMap, journalInfo, keywords, i
       makeComposer(composer)
     ]
     let relationshipQuery = [
+      personRelationship(person, composer, critic, idealOpera, review),
+      idealOperaRelationship(idealOpera, place, review),
+      journalRelationships(journal, review)
     ]
     let query = ` ${nodeQuery.join(' ')} ${relationshipQuery.join(' ')}`
 
@@ -53,8 +61,31 @@ module.exports = function handleLutteken(data, nameMap, journalInfo, keywords, i
   })
 }
 
-    return str += ` ${nodeQuery.join(' ')} ${relationshipQuery.join(' ')}`
-  }, '')
+const journalRelationships = (journal, review) => {
+  if (!review || !journal) return ``
+  return `MERGE ${[
+    (journal && review) ? `(journal)-[:CONTAINS]-(review)` : false
+  ].filter(Boolean).join(' MERGE ')}`
+}
+
+const personRelationship = (person, composer, critic, idealOpera, review) => {
+  if (!person && !composer && !critic && !idealOpera) return ``
+  return `MERGE ${[
+    (person && review) ? `(person)-[:ASSOCIATED_WITH]-(review)` : false,
+    (composer && idealOpera) ? `(composer)-[:COMPOSED]-(idealOpera)` : false,
+    (critic && idealOpera) ? `(critic)-[:CRITIQUED]-(idealOpera)` : false,
+    (composer && review) ? `(composer)-[:ASSOCIATED_WITH]-(review)` : false,
+    (critic && review) ? `(critic)-[:ASSOCIATED_WITH]-(review)` : false
+  ].filter(Boolean).join(' MERGE ')}`
+}
+
+const idealOperaRelationship = (idealOpera, place, review, composer) => {
+  if (!idealOpera) return ``
+  return `MERGE ${[
+    (idealOpera && place) ? `(place)-[:PERFORMED_IN]-(idealOpera)` : false,
+    (idealOpera && review) ? `(review)-[:REVIEWS]-(idealOpera)` : false,
+    (idealOpera && composer) ? `(composer)-[:WROTE]-(idealOpera)` : false
+  ].filter(Boolean).join(' MERGE ')}`
 }
 
 const makePlace = (place, theatre) => {
@@ -74,7 +105,7 @@ const makeReview = (review, publication1, publication2, journal, translated, yea
       review ? `Review: "${review}"` : false,
       (publication1 || publication2) ? `Continuation: "${publication1 || ''} ${publication1 ? ', ' : ''}${publication2 || ''}"` : false,
       journal ? `Journal: "${typeof (journal) === 'string' ? journal : journal.Journal}"` : false,
-      year ? `Year: date({year:${year}})` : false,
+      year ? `Year: date({year: ${year}})` : false,
       translated ? `Translated: "${translated}"` : false,
       critic ? `Critic: "${critic}"` : false
     ].filter(Boolean).join(', ')}})`

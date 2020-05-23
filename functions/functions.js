@@ -135,6 +135,10 @@ module.exports = {
     }) || journal
   },
 
+  validate_data(data) {
+    return data !== '#NAME?' ? data : false
+  },
+
   normalize_name(name, nameMap) {
     if (name != '') {
       let found = nameMap.find(canon => Object.values(canon).includes(name))
